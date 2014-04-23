@@ -1,0 +1,16 @@
+{
+  "name": "gulp-scss-lint",
+  "description": "Validate `.scss` files with `scss-lint`",
+  "version": "0.0.1",
+  "homepage": "http://github.com/juanfran/gulp-scss-lint",
+  "repository": "git://github.com/juanfran/gulp-scss-lint.git",
+  "main": "index.js",
+  "keywords": [
+    "gulpplugin",
+    "scss-lint"
+  ],
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "license": "MIT"
+}
