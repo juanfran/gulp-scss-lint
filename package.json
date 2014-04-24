@@ -5,6 +5,9 @@
   "homepage": "http://github.com/juanfran/gulp-scss-lint",
   "repository": "git://github.com/juanfran/gulp-scss-lint.git",
   "main": "index.js",
+  "author": {
+    "name": "Juanfran Alcántara"
+  },
   "keywords": [
     "gulpplugin",
     "scss-lint"
@@ -12,5 +15,17 @@
   "engines": {
     "node": ">= 0.10"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "chai": "~1.9.1"
+  },
+  "dependencies": {
+    "dargs": "~0.1.0",
+    "gulp-util": "~2.2.14",
+    "event-stream": "~3.1.2"
+  }
 }
