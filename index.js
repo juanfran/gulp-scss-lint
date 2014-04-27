@@ -21,6 +21,14 @@ var formatLine = function (line, file) {
   return result;
 };
 
+var scssLintCodes = {
+  '64': 'Command line usage error',
+  '66': 'Input file did not exist or was not readable',
+  '70': 'Internal software error',
+  '78': 'Configuration error',
+  '127': 'You need to have Ruby and scss-lint gem installed'
+};
+
 module.exports = function (options) {
   options = options || {};
 
@@ -39,8 +47,8 @@ module.exports = function (options) {
 
       exec(command, function (error, report) {
         if (error && error.code !== 65) {
-          if (error.code === 127) {
-            throw new gutil.PluginError(PLUGIN_NAME, 'You need to have Ruby and scss-lint gem installed');
+          if (scssLintCodes[error.code]) {
+            throw new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]);
           } else {
             throw new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + ' in file ' + currentFile.path);
           }
