@@ -2,7 +2,7 @@
 
 > Lint your `.scss` files
 
-This plugin require [scss-lint](https://github.com/causes/scss-lint)
+This plugin require Ruby and [scss-lint](https://github.com/causes/scss-lint)
 
 ## Usage
 

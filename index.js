@@ -39,7 +39,11 @@ module.exports = function (options) {
 
       exec(command, function (error, report) {
         if (error && error.code !== 65) {
-          throw new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + ' in file ' + currentFile.path);
+          if (error.code === 127) {
+            throw new gutil.PluginError(PLUGIN_NAME, 'You need to have Ruby and scss-lint gem installed');
+          } else {
+            throw new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + ' in file ' + currentFile.path);
+          }
         }
 
         if (report.length) {
