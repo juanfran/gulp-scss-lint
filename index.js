@@ -39,7 +39,7 @@ module.exports = function (options) {
   }
 
   return es.map(function(file, cb) {
-    var args = ['scss-lint', file.path].concat(optionsArgs);
+    var args = ['scss-lint', file.path.replace(/(\s)/g, "\\ ")].concat(optionsArgs);
     var command = args.join(' ');
 
     (function () {
