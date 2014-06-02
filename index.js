@@ -32,44 +32,46 @@ var scssLintCodes = {
 module.exports = function (options) {
   options = options || {};
 
+  if (options.exclude) {
+    throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
+  }
+
   var optionsArgs = dargs(options);
 
   if (optionsArgs.bundleExec) {
     optionsArgs.unshift('bundle', 'exec');
   }
 
-  return es.map(function(file, cb) {
-    var args = ['scss-lint', file.path.replace(/(\s)/g, "\\ ")].concat(optionsArgs);
+  return es.map(function(currentFile, cb) {
+    var args = ['scss-lint', currentFile.path.replace(/(\s)/g, "\\ ")].concat(optionsArgs);
     var command = args.join(' ');
 
-    (function () {
-      var currentFile = file;
+    console.log(command);
 
-      exec(command, function (error, report) {
-        if (error && error.code !== 65) {
-          if (scssLintCodes[error.code]) {
-            throw new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]);
-          } else {
-            throw new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + ' in file ' + currentFile.path);
-          }
+    exec(command, function (error, report) {
+      if (error && error.code !== 65) {
+        if (scssLintCodes[error.code]) {
+          throw new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]);
+        } else {
+          throw new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + ' in file ' + currentFile.path);
         }
+      }
 
-        if (report.length) {
-          report = report.trim().split('\n');
+      if (report.length) {
+        report = report.trim().split('\n');
 
-          gutil.log(colors.cyan(report.length) + ' errors found in ' + colors.magenta(currentFile.path));
+        gutil.log(colors.cyan(report.length) + ' errors found in ' + colors.magenta(currentFile.path));
 
-          report.forEach(function (line) {
-            var result = formatLine(line);
+        report.forEach(function (line) {
+          var result = formatLine(line);
 
-            gutil.log(colors.cyan(currentFile.path) + ':' + colors.magenta(result.line) + ' [' + result.errorType + '] ' + result.msg);
-          });
-        }
+          gutil.log(colors.cyan(currentFile.path) + ':' + colors.magenta(result.line) + ' [' + result.errorType + '] ' + result.msg);
+        });
+      }
 
-        currentFile.scsslint  = {'success': report.length === 0};
+      currentFile.scsslint  = {'success': report.length === 0};
 
-        cb(null, currentFile);
-      });
-    }());
+      cb(null, currentFile);
+    });
   });
 };

@@ -18,6 +18,6 @@ var scsslint = require('gulp-scss-lint');
 
 gulp.task('scss', function() {
   gulp.src('/scss/*.scss')
-    .pipe(scsslint({'config': 'lint.yml'})); //you can set scss-lint parameters
+    .pipe(scsslint({'config': 'lint.yml'})); //you can set scss-lint parameters, except the option 'exclude'
 });
 ```
