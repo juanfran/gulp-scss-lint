@@ -46,8 +46,6 @@ module.exports = function (options) {
     var args = ['scss-lint', currentFile.path.replace(/(\s)/g, "\\ ")].concat(optionsArgs);
     var command = args.join(' ');
 
-    console.log(command);
-
     exec(command, function (error, report) {
       if (error && error.code !== 65) {
         if (scssLintCodes[error.code]) {
