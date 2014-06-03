@@ -36,7 +36,11 @@ module.exports = function (options) {
     throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
   }
 
-  var optionsArgs = dargs(options);
+  var optionsArgs = dargs(options),
+      lintResults = {
+        errors: 0,
+        warnings: 0
+      };
 
   if (optionsArgs.bundleExec) {
     optionsArgs.unshift('bundle', 'exec');
@@ -63,11 +67,18 @@ module.exports = function (options) {
         report.forEach(function (line) {
           var result = formatLine(line);
 
+          if ('E' === result.errorType) {
+            lintResults.errors += 1;
+          }
+          if ('W' === result.errorType) {
+            lintResults.warnings += 1;
+          }
+
           gutil.log(colors.cyan(currentFile.path) + ':' + colors.magenta(result.line) + ' [' + result.errorType + '] ' + result.msg);
         });
       }
 
-      currentFile.scsslint  = {'success': report.length === 0};
+      currentFile.scsslint  = {'success': report.length === 0, 'results': lintResults};
 
       cb(null, currentFile);
     });
