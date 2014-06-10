@@ -21,3 +21,8 @@ gulp.task('scss', function() {
     .pipe(scsslint({'config': 'lint.yml'})); //you can set scss-lint parameters, except the option 'exclude'
 });
 ```
+
+## Testing
+
+To test you must first have `scss-lint` installed globally using
+`gem install scss-lint` as well as via bundler using `bundle install`.

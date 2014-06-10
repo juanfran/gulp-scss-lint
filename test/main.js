@@ -51,12 +51,27 @@ describe('gulp-scsslint', function() {
 
   it('change default config', function (done) {
     var fakeFile = getFixtureFile('valid.scss');
-
     var stream = scssLintPlugin({'config': './test/fixtures/default.yml'});
 
     stream
       .on('data', function (file) {
         expect(file.scsslint.success).to.be.false;
+      })
+      .once('end', function() {
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
+  it('should create correct bundle exec command', function (done) {
+    var fakeFile = getFixtureFile('valid.scss');
+    var stream = scssLintPlugin({'bundleExec': true});
+
+    stream
+      .on('data', function (file) {
+        expect(file.scsslint.success).to.be.true;
       })
       .once('end', function() {
         done();
