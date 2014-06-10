@@ -10,7 +10,11 @@
   },
   "keywords": [
     "gulpplugin",
-    "scss-lint"
+    "scss-lint",
+    "sass-lint",
+    "scss",
+    "lint",
+    "gulp"
   ],
   "engines": {
     "node": ">= 0.10"
