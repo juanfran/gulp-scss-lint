@@ -36,19 +36,23 @@ module.exports = function (options) {
     throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
   }
 
-  var optionsArgs = dargs(options),
+  var commandParts = ['scss-lint'],
+      optionsArgs,
       lintResults = {
         errors: 0,
         warnings: 0
       };
 
-  if (optionsArgs.bundleExec) {
-    optionsArgs.unshift('bundle', 'exec');
+  if (options.bundleExec) {
+    commandParts.unshift('bundle', 'exec');
+    delete options.bundleExec;
   }
 
+  optionsArgs = dargs(options);
+
   return es.map(function(currentFile, cb) {
-    var args = ['scss-lint', currentFile.path.replace(/(\s)/g, "\\ ")].concat(optionsArgs);
-    var command = args.join(' ');
+    var filePath = currentFile.path.replace(/(\s)/g, "\\ ");
+    var command = commandParts.concat([filePath], optionsArgs).join(' ');
 
     exec(command, function (error, report) {
       if (error && error.code !== 65) {

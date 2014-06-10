@@ -9,6 +9,9 @@ npm install gulp-scss-lint --save-dev
 ```
 
 This plugin require Ruby and [scss-lint](https://github.com/causes/scss-lint)
+```shell
+gem install scss-lint
+```
 
 ## Usage
 
@@ -67,3 +70,8 @@ gulp.task('scss-lint', function() {
 });
 
 ```
+
+## Testing
+
+To test you must first have `scss-lint` installed globally using
+`gem install scss-lint` as well as via bundler using `bundle install`.
