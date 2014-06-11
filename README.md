@@ -25,23 +25,33 @@ gulp.task('scss-lint', function() {
 });
 ```
 
-### Lint only modified files
-You should use [gulp-cached](https://github.com/wearefractal/gulp-cached)
+### Options
 
-In this example, without the gulp-cached plugin every time you save a `.scss` file the scss-lint plugin checks all your files and with gulp-cached only checks the modified files.
+It has the same options as [scss-lint](https://github.com/causes/scss-lint)
+
+#### config
+
+- Type: `String`
+- Default: [default scss-lint config file](https://github.com/causes/scss-lint/blob/master/config/default.yml).
+
+#### bundleExec
+
+- Type: `Boolean`
+- Default: `false`
+
+If your gem is installed via [bundler](http://bundler.io), set this option to `true`
+
+#### Example config
 
 ```js
 var scsslint = require('gulp-scss-lint');
-var cache = require('gulp-cached');
 
 gulp.task('scss-lint', function() {
   gulp.src('/scss/*.scss')
-    .pipe(cache('scsslint'))
-    .pipe(scsslint());
-});
-
-gulp.task('watch', function() {
-  gulp.watch('/scss/*.scss', ['scss-lint');
+    .pipe(scsslint({
+        'config': 'lint.yml',
+        'bundleExec': true
+    }));
 });
 ```
 
@@ -69,6 +79,26 @@ gulp.task('scss-lint', function() {
     .pipe(scssFilter.restore());
 });
 
+```
+
+### Lint only modified files
+You should use [gulp-cached](https://github.com/wearefractal/gulp-cached)
+
+In this example, without the gulp-cached plugin every time you save a `.scss` file the scss-lint plugin checks all your files and with gulp-cached only checks the modified files.
+
+```js
+var scsslint = require('gulp-scss-lint');
+var cache = require('gulp-cached');
+
+gulp.task('scss-lint', function() {
+  gulp.src('/scss/*.scss')
+    .pipe(cache('scsslint'))
+    .pipe(scsslint());
+});
+
+gulp.task('watch', function() {
+  gulp.watch('/scss/*.scss', ['scss-lint');
+});
 ```
 
 ## Testing
