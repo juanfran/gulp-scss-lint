@@ -6,20 +6,13 @@ fs = require('fs'),
 dargs = require('dargs'),
 exec = require('child_process').exec,
 gutil = require('gulp-util'),
-colors = gutil.colors;
+colors = gutil.colors,
+Q = require('q'),
+xml2js = require('xml2js').parseString;
+
+var stream;
 
 var PLUGIN_NAME = 'gulp-scss-lint';
-
-var formatLine = function (line, file) {
-  var result = {};
-  var split = line.split(':');
-
-  result.line = split[1].substr(0, split[1].indexOf('[') - 1);
-  result.errorType = split[1].substr(split[1].indexOf('[') + 1, 1);
-  result.msg = split[1].substr(split[1].indexOf(']') + 2);
-
-  return result;
-};
 
 var scssLintCodes = {
   '64': 'Command line usage error',
@@ -29,19 +22,47 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
+function execCommand(command) {
+  var deferred = Q.defer();
+
+  exec(command, function (error, report) {
+    if (error && error.code !== 65) {
+      if (scssLintCodes[error.code]) {
+        deferred.reject(scssLintCodes[error.code]);
+      } else {
+        deferred.reject('Error code ' + error.code);
+      }
+    }
+
+    deferred.resolve(report);
+  });
+
+  return deferred.promise;
+}
+
+function formatCommandResult (report) {
+  var deferred = Q.defer();
+
+  xml2js(report, function (err, result) {
+    deferred.resolve(result);
+  });
+
+  return deferred.promise;
+}
+
 module.exports = function (options) {
+  var stream;
+
   options = options || {};
+
+  options.format = 'XML';
 
   if (options.exclude) {
     throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
   }
 
   var commandParts = ['scss-lint'],
-      optionsArgs,
-      lintResults = {
-        errors: 0,
-        warnings: 0
-      };
+  optionsArgs;
 
   if (options.bundleExec) {
     commandParts.unshift('bundle', 'exec');
@@ -50,41 +71,79 @@ module.exports = function (options) {
 
   optionsArgs = dargs(options);
 
-  return es.map(function(currentFile, cb) {
-    var filePath = currentFile.path.replace(/(\s)/g, "\\ ");
-    var command = commandParts.concat([filePath], optionsArgs).join(' ');
+  var files = [];
 
-    exec(command, function (error, report) {
-      if (error && error.code !== 65) {
-        if (scssLintCodes[error.code]) {
-          throw new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]);
-        } else {
-          throw new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + ' in file ' + currentFile.path);
+  function reportLint (report) {
+    var lintResults = {
+      success: true,
+      errors: 0,
+      warnings: 0,
+      messages: []
+    };
+
+    function getFileReport(file) {
+      for (var i = 0; i < report.lint.file.length; i++) {
+        if (report.lint.file[i].$.name === file.path) {
+          return report.lint.file[i];
         }
       }
+    }
 
-      if (report.length) {
-        report = report.trim().split('\n');
+    var fileReport;
+    for (var i = 0; i < files.length; i++) {
+      fileReport = getFileReport(files[i]);
 
-        gutil.log(colors.cyan(report.length) + ' errors found in ' + colors.magenta(currentFile.path));
+      if (fileReport && fileReport.issue.length) {
 
-        report.forEach(function (line) {
-          var result = formatLine(line);
+        gutil.log(colors.cyan(fileReport.issue.length) + ' issues found in ' + colors.magenta(fileReport.$.name));
 
-          if ('E' === result.errorType) {
-            lintResults.errors += 1;
+        fileReport.issue.forEach(function (issue) {
+          issue = issue.$;
+
+          var severity = issue.severity === 'warning' ? 'W' : 'E';
+
+          if (severity === 'W') {
+            lintResults.warnings++;
+          } else {
+            lintResults.errors++;
           }
-          if ('W' === result.errorType) {
-            lintResults.warnings += 1;
-          }
 
-          gutil.log(colors.cyan(currentFile.path) + ':' + colors.magenta(result.line) + ' [' + result.errorType + '] ' + result.msg);
+          lintResults.messages.push(issue);
+
+          gutil.log(colors.cyan(fileReport.$.name) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason);
         });
+
+        lintResults.success = true;
+      } else {
+        lintResults.success = false;
       }
 
-      currentFile.scsslint  = {'success': report.length === 0, 'results': lintResults};
+      files[i].scsslint  = lintResults;
+    }
+  }
 
-      cb(null, currentFile);
+  function writeStream(currentFile) {
+    if (currentFile) {
+      files.push(currentFile);
+    }
+  }
+
+  function endStream() {
+    var filePaths = files.map(function (file) {
+      return file.path.replace(/(\s)/g, "\\ ");
     });
-  });
+
+    var command = commandParts.concat(filePaths, optionsArgs).join(' ');
+
+    execCommand(command)
+      .then(formatCommandResult)
+      .then(reportLint)
+      .fail(function (error) {
+        throw new gutil.PluginError(PLUGIN_NAME, error);
+      });
+  }
+
+  stream = es.through(writeStream, endStream);
+
+  return stream;
 };
