@@ -24,6 +24,19 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
+function defaultReport(file) {
+  if (!file.scsslint.success) {
+    gutil.log(colors.cyan(file.scsslint.issues.length) + ' issues found in ' + colors.magenta(file.path));
+
+    file.scsslint.issues.forEach(function (issue) {
+      var severity = issue.severity === 'warning' ? 'W' : 'E';
+      var logMsg = colors.cyan(file.path) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason;
+
+      gutil.log(logMsg);
+    });
+  }
+}
+
 module.exports = function (options) {
   var stream,
   xmlReport = '',
@@ -31,7 +44,8 @@ module.exports = function (options) {
   excludes = ['bundleExec',
               'xmlPipeOutput',
               'reporterOutput',
-              'emitError'
+              'emitError',
+              'customReport'
              ];
 
   options = options || {};
@@ -89,7 +103,7 @@ module.exports = function (options) {
       success: true,
       errors: 0,
       warnings: 0,
-      messages: []
+      issues: []
     };
   }
 
@@ -111,7 +125,7 @@ module.exports = function (options) {
       fileReport = getFileReport(files[i]);
 
       if (fileReport && fileReport.issue.length) {
-        gutil.log(colors.cyan(fileReport.issue.length) + ' issues found in ' + colors.magenta(fileReport.$.name));
+        lintResult.success = false;
 
         fileReport.issue.forEach(function (issue) {
           issue = issue.$;
@@ -124,10 +138,8 @@ module.exports = function (options) {
             lintResult.errors++;
           }
 
-          lintResult.messages.push(issue);
+          lintResult.issues.push(issue);
           logMsg = colors.cyan(fileReport.$.name) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason;
-
-          gutil.log(logMsg);
 
           if ((severity === 'W' || severity === 'E') && options.emitError === 'all') {
             stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
@@ -137,11 +149,15 @@ module.exports = function (options) {
             stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
           }
         });
-
-        lintResult.success = false;
       }
 
       files[i].scsslint = lintResult;
+
+      if (options.customReport) {
+        options.customReport(files[i]);
+      } else {
+        defaultReport(files[i]);
+      }
 
       if (!options.xmlPipeOutput) {
         stream.emit('data', files[i]);
