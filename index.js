@@ -73,14 +73,16 @@ module.exports = function (options) {
 
   var files = [];
 
-  function reportLint (report) {
-    var lintResults = {
+  function defaultLintResult() {
+    return {
       success: true,
       errors: 0,
       warnings: 0,
       messages: []
     };
+  }
 
+  function reportLint(report) {
     function getFileReport(file) {
       for (var i = 0; i < report.lint.file.length; i++) {
         if (report.lint.file[i].$.name === file.path) {
@@ -90,11 +92,13 @@ module.exports = function (options) {
     }
 
     var fileReport;
+    var lintResult = {};
+
     for (var i = 0; i < files.length; i++) {
+      lintResult = defaultLintResult();
       fileReport = getFileReport(files[i]);
 
       if (fileReport && fileReport.issue.length) {
-
         gutil.log(colors.cyan(fileReport.issue.length) + ' issues found in ' + colors.magenta(fileReport.$.name));
 
         fileReport.issue.forEach(function (issue) {
@@ -103,23 +107,23 @@ module.exports = function (options) {
           var severity = issue.severity === 'warning' ? 'W' : 'E';
 
           if (severity === 'W') {
-            lintResults.warnings++;
+            lintResult.warnings++;
           } else {
-            lintResults.errors++;
+            lintResult.errors++;
           }
 
-          lintResults.messages.push(issue);
+          lintResult.messages.push(issue);
 
           gutil.log(colors.cyan(fileReport.$.name) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason);
         });
 
-        lintResults.success = true;
-      } else {
-        lintResults.success = false;
+        lintResult.success = false;
       }
 
-      files[i].scsslint  = lintResults;
+      files[i].scsslint = lintResult;
     }
+
+    stream.emit('data', files[i]);
   }
 
   function writeStream(currentFile) {
@@ -129,6 +133,11 @@ module.exports = function (options) {
   }
 
   function endStream() {
+    if (!files.length) {
+      stream.emit('end');
+      return;
+    }
+
     var filePaths = files.map(function (file) {
       return file.path.replace(/(\s)/g, "\\ ");
     });
@@ -138,8 +147,11 @@ module.exports = function (options) {
     execCommand(command)
       .then(formatCommandResult)
       .then(reportLint)
+      .then(function () {
+        stream.emit('end');
+      })
       .fail(function (error) {
-        throw new gutil.PluginError(PLUGIN_NAME, error);
+        stream.emit('error', new gutil.PluginError(PLUGIN_NAME, error));
       });
   }
 
