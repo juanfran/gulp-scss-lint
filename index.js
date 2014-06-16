@@ -8,7 +8,9 @@ exec = require('child_process').exec,
 gutil = require('gulp-util'),
 colors = gutil.colors,
 Q = require('q'),
-xml2js = require('xml2js').parseString;
+xml2js = require('xml2js').parseString,
+fs = require('fs'),
+path = require('path');
 
 var stream;
 
@@ -40,38 +42,46 @@ function execCommand(command) {
   return deferred.promise;
 }
 
-function formatCommandResult (report) {
-  var deferred = Q.defer();
-
-  xml2js(report, function (err, result) {
-    deferred.resolve(result);
-  });
-
-  return deferred.promise;
-}
-
 module.exports = function (options) {
-  var stream;
+  var stream,
+  xmlReport = '',
+  commandParts = ['scss-lint'],
+  excludes = ['bundleExec',
+              'xmlPipeOutput',
+              'reporterOutput'
+             ];
 
   options = options || {};
-
   options.format = 'XML';
 
   if (options.exclude) {
     throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
   }
 
-  var commandParts = ['scss-lint'],
-  optionsArgs;
-
   if (options.bundleExec) {
     commandParts.unshift('bundle', 'exec');
-    delete options.bundleExec;
+    excludes.push('bundleExec')
   }
 
-  optionsArgs = dargs(options);
+  var optionsArgs = dargs(options, excludes);
 
   var files = [];
+
+  function formatCommandResult (report) {
+    var deferred = Q.defer();
+
+    xmlReport = report;
+
+    if (options.reporterOutput) {
+      fs.writeFile(options.reporterOutput, report);
+    }
+
+    xml2js(report, function (err, result) {
+      deferred.resolve(result);
+    });
+
+    return deferred.promise;
+  }
 
   function defaultLintResult() {
     return {
@@ -121,9 +131,22 @@ module.exports = function (options) {
       }
 
       files[i].scsslint = lintResult;
+
+      if (!options.xmlPipeOutput) {
+        stream.emit('data', files[i]);
+      }
     }
 
-    stream.emit('data', files[i]);
+    if (options.xmlPipeOutput) {
+      var xmlPipeFile = new gutil.File({
+        cwd: files[0].cwd,
+        base: files[0].base,
+        path: path.join(files[0].base, options.xmlPipeOutput),
+        contents: new Buffer(xmlReport)
+      });
+
+      stream.emit('data', xmlPipeFile);
+    }
   }
 
   function writeStream(currentFile) {
