@@ -24,31 +24,14 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
-function execCommand(command) {
-  var deferred = Q.defer();
-
-  exec(command, function (error, report) {
-    if (error && error.code !== 65) {
-      if (scssLintCodes[error.code]) {
-        deferred.reject(scssLintCodes[error.code]);
-      } else {
-        deferred.reject('Error code ' + error.code);
-      }
-    }
-
-    deferred.resolve(report);
-  });
-
-  return deferred.promise;
-}
-
 module.exports = function (options) {
   var stream,
   xmlReport = '',
   commandParts = ['scss-lint'],
   excludes = ['bundleExec',
               'xmlPipeOutput',
-              'reporterOutput'
+              'reporterOutput',
+              'fail'
              ];
 
   options = options || {};
@@ -66,6 +49,24 @@ module.exports = function (options) {
   var optionsArgs = dargs(options, excludes);
 
   var files = [];
+
+  function execCommand(command) {
+    var deferred = Q.defer();
+
+    exec(command, function (error, report) {
+      if (error && error.code !== 65) {
+        if (scssLintCodes[error.code]) {
+          stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
+        } else {
+          stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code));
+        }
+      }
+
+      deferred.resolve(report);
+    });
+
+    return deferred.promise;
+  }
 
   function formatCommandResult (report) {
     var deferred = Q.defer();
@@ -103,6 +104,7 @@ module.exports = function (options) {
 
     var fileReport;
     var lintResult = {};
+    var logMsg = '';
 
     for (var i = 0; i < files.length; i++) {
       lintResult = defaultLintResult();
@@ -123,8 +125,17 @@ module.exports = function (options) {
           }
 
           lintResult.messages.push(issue);
+          logMsg = colors.cyan(fileReport.$.name) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason;
 
-          gutil.log(colors.cyan(fileReport.$.name) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason);
+          gutil.log(logMsg);
+
+          if ((severity === 'W' || severity === 'E') && options.fail === 'all') {
+            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
+          } else if (severity === 'W' && options.fail === 'warning') {
+            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
+          } else if (severity === 'E' && options.fail === 'error') {
+            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
+          }
         });
 
         lintResult.success = false;
@@ -172,9 +183,6 @@ module.exports = function (options) {
       .then(reportLint)
       .then(function () {
         stream.emit('end');
-      })
-      .fail(function (error) {
-        stream.emit('error', new gutil.PluginError(PLUGIN_NAME, error));
       });
   }
 
