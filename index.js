@@ -31,7 +31,7 @@ module.exports = function (options) {
   excludes = ['bundleExec',
               'xmlPipeOutput',
               'reporterOutput',
-              'fail'
+              'emitError'
              ];
 
   options = options || {};
@@ -129,11 +129,11 @@ module.exports = function (options) {
 
           gutil.log(logMsg);
 
-          if ((severity === 'W' || severity === 'E') && options.fail === 'all') {
+          if ((severity === 'W' || severity === 'E') && options.emitError === 'all') {
             stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
-          } else if (severity === 'W' && options.fail === 'warning') {
+          } else if (severity === 'W' && options.emitError === 'warning') {
             stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
-          } else if (severity === 'E' && options.fail === 'error') {
+          } else if (severity === 'E' && options.emitError === 'error') {
             stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
           }
         });
