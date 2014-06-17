@@ -7,12 +7,13 @@ dargs = require('dargs'),
 exec = require('child_process').exec,
 gutil = require('gulp-util'),
 colors = gutil.colors,
-Q = require('q'),
 xml2js = require('xml2js').parseString,
 fs = require('fs'),
-path = require('path');
+path = require('path'),
+reporters = require('./reporters');
 
 var stream;
+var kk;
 
 var PLUGIN_NAME = 'gulp-scss-lint';
 
@@ -24,27 +25,12 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
-function defaultReport(file) {
-  if (!file.scsslint.success) {
-    gutil.log(colors.cyan(file.scsslint.issues.length) + ' issues found in ' + colors.magenta(file.path));
-
-    file.scsslint.issues.forEach(function (issue) {
-      var severity = issue.severity === 'warning' ? 'W' : 'E';
-      var logMsg = colors.cyan(file.path) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason;
-
-      gutil.log(logMsg);
-    });
-  }
-}
-
-module.exports = function (options) {
-  var stream,
-  xmlReport = '',
+var gulpScssLint = function (options) {
+  var xmlReport = '',
   commandParts = ['scss-lint'],
   excludes = ['bundleExec',
               'xmlPipeOutput',
               'reporterOutput',
-              'emitError',
               'customReport'
              ];
 
@@ -65,9 +51,8 @@ module.exports = function (options) {
   var files = [];
 
   function execCommand(command) {
-    var deferred = Q.defer();
-
     exec(command, function (error, report) {
+
       if (error && error.code !== 65) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
@@ -76,26 +61,17 @@ module.exports = function (options) {
         }
       }
 
-      deferred.resolve(report);
+      xmlReport = report;
+      formatCommandResult();
     });
-
-    return deferred.promise;
   }
 
-  function formatCommandResult (report) {
-    var deferred = Q.defer();
-
-    xmlReport = report;
-
+  function formatCommandResult () {
     if (options.reporterOutput) {
-      fs.writeFile(options.reporterOutput, report);
+      fs.writeFile(options.reporterOutput, xmlReport);
     }
 
-    xml2js(report, function (err, result) {
-      deferred.resolve(result);
-    });
-
-    return deferred.promise;
+    xml2js(xmlReport, reportLint);
   }
 
   function defaultLintResult() {
@@ -107,22 +83,21 @@ module.exports = function (options) {
     };
   }
 
-  function reportLint(report) {
-    function getFileReport(file) {
-      for (var i = 0; i < report.lint.file.length; i++) {
-        if (report.lint.file[i].$.name === file.path) {
-          return report.lint.file[i];
-        }
+  function getFileReport(file, report) {
+    for (var i = 0; i < report.lint.file.length; i++) {
+      if (report.lint.file[i].$.name === file.path) {
+        return report.lint.file[i];
       }
     }
+  }
 
+  function reportLint(err, report) {
     var fileReport;
     var lintResult = {};
-    var logMsg = '';
 
     for (var i = 0; i < files.length; i++) {
       lintResult = defaultLintResult();
-      fileReport = getFileReport(files[i]);
+      fileReport = getFileReport(files[i], report);
 
       if (fileReport && fileReport.issue.length) {
         lintResult.success = false;
@@ -139,15 +114,6 @@ module.exports = function (options) {
           }
 
           lintResult.issues.push(issue);
-          logMsg = colors.cyan(fileReport.$.name) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason;
-
-          if ((severity === 'W' || severity === 'E') && options.emitError === 'all') {
-            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
-          } else if (severity === 'W' && options.emitError === 'warning') {
-            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
-          } else if (severity === 'E' && options.emitError === 'error') {
-            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, logMsg));
-          }
         });
       }
 
@@ -156,7 +122,7 @@ module.exports = function (options) {
       if (options.customReport) {
         options.customReport(files[i]);
       } else {
-        defaultReport(files[i]);
+        reporters.defaultReporter(files[i]);
       }
 
       if (!options.xmlPipeOutput) {
@@ -174,6 +140,8 @@ module.exports = function (options) {
 
       stream.emit('data', xmlPipeFile);
     }
+
+    stream.emit('end');
   }
 
   function writeStream(currentFile) {
@@ -193,16 +161,13 @@ module.exports = function (options) {
     });
 
     var command = commandParts.concat(filePaths, optionsArgs).join(' ');
-
-    execCommand(command)
-      .then(formatCommandResult)
-      .then(reportLint)
-      .then(function () {
-        stream.emit('end');
-      });
+    execCommand(command);
   }
 
   stream = es.through(writeStream, endStream);
-
   return stream;
 };
+
+gulpScssLint.failReporter = reporters.failReporter
+
+module.exports = gulpScssLint;
