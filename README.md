@@ -143,13 +143,13 @@ file.scsslint = {
     }
   ]
 };
+```
 
 The issues has the same parameters that [scss-lint](https://github.com/causes/scss-lint#xml)
-```
 
 ## Custom reporter
 
-You can replace the default console log by a custom console output with `customReport`, the customReport function will be called for each file that includes the lint issues. [See result params](#results)
+You can replace the default console log by a custom output with `customReport`, the customReport function will be called for each file that includes the lint results [See result params](#results)
 
 ```js
 var scsslint = require('gulp-scss-lint');
