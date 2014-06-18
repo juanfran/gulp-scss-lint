@@ -8,63 +8,87 @@
 npm install gulp-scss-lint --save-dev
 ```
 
-This plugin require Ruby and [scss-lint](https://github.com/causes/scss-lint)
+This plugin requires Ruby and [scss-lint](https://github.com/causes/scss-lint)
 ```shell
 gem install scss-lint
 ```
 
 ## Usage
 
-Add in you `gulpfile.js`
+`gulpfile.js`
 ```js
 var scsslint = require('gulp-scss-lint');
 
 gulp.task('scss-lint', function() {
   gulp.src('/scss/*.scss')
-    .pipe(scsslint({'config': 'lint.yml'}));
+    .pipe(scsslint());
 });
 ```
 
-### Options
-
-It has the same options as [scss-lint](https://github.com/causes/scss-lint)
+## Api
 
 #### config
 
 - Type: `String`
 - Default: [default scss-lint config file](https://github.com/causes/scss-lint/blob/master/config/default.yml).
 
+```js
+scsslint({
+    'config': 'lint.yml',
+});
+```
+
 #### bundleExec
 
 - Type: `Boolean`
 - Default: `false`
 
-If your gem is installed via [bundler](http://bundler.io), set this option to `true`
-
-#### Example config
+If your gem is installed via [bundler](http://bundler.io), then set this option to `true`
 
 ```js
-var scsslint = require('gulp-scss-lint');
-
-gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
-    .pipe(scsslint({
-        'config': 'lint.yml',
-        'bundleExec': true
-    }));
+scsslint({
+    'bundleExec': true
 });
 ```
 
-### Excluding
+#### reporterOutput
 
-To ignore files you could use the gulp.src ignore format '!filePath''
+- Type: `String`
+- Default: `null`
+
+If you want to save the report to a XML file then set reporterOutput with a file name
+
+```js
+scsslint({
+    'reporterOutput': 'scssReport.xml'
+});
+```
+
+#### xmlPipeOutput
+
+- Type: `String`
+- Default: `null`
+
+If you want the pipe return the XML file instead of the `.scss` file then set xmlPipeOutput with a file name
+
+```js
+gulp.src(['**/*.scss'])
+  .pipe(scsslint({
+    'xmlPipeOutput': 'scssReport.xml'
+  }))
+  .pipe(gulp.dest('./reports'))
+```
+
+## Excluding
+
+To exclude files you should use the gulp.src ignore format '!filePath''
 
 ```js
 gulp.src(['/scss/*.scss', '!/scss/vendor/**/*.scss'])
   .pipe(scsslint({'config': 'lint.yml'}));
 ```
 
-Or you could use [gulp-filter](https://github.com/sindresorhus/gulp-filter)
+Or you should use [gulp-filter](https://github.com/sindresorhus/gulp-filter)
 
 ```js
 var scsslint = require('gulp-scss-lint');
@@ -81,10 +105,10 @@ gulp.task('scss-lint', function() {
 
 ```
 
-### Lint only modified files
+## Lint only modified files
 You should use [gulp-cached](https://github.com/wearefractal/gulp-cached)
 
-In this example, without the gulp-cached plugin every time you save a `.scss` file the scss-lint plugin checks all your files and with gulp-cached only checks the modified files.
+In this example, without the gulp-cached plugin, every time you save a `.scss` file the scss-lint plugin will check all your files and with gulp-cached will only checks the modified files.
 
 ```js
 var scsslint = require('gulp-scss-lint');
@@ -98,6 +122,76 @@ gulp.task('scss-lint', function() {
 
 gulp.task('watch', function() {
   gulp.watch('/scss/*.scss', ['scss-lint');
+});
+```
+
+## Results
+
+Adds the following properties to the file object:
+
+```js
+file.scsslint = {
+  'success': false,
+  'errors': 0,
+  'warnings': 1,
+  'issues': [
+    {
+      'line': 123,
+      'column': 10,
+      'severity': 'warning', // or `error`
+      'reason': 'a description of the error'
+    }
+  ]
+};
+
+The issues has the same parameters that [scss-lint](https://github.com/causes/scss-lint#xml)
+```
+
+## Custom reporter
+
+You can replace the default console log by a custom console output with `customReport`, the customReport function will be called for each file that includes the lint issues. [See result params](#results)
+
+```js
+var scsslint = require('gulp-scss-lint');
+
+var myCustomReporter = function(file) {
+  if (!file.scsslint.success) {
+    gutil.log(file.scsslint.issues.length + ' issues found in ' + file.path);
+  }
+};
+
+gulp.task('scss-lint', function() {
+  gulp.src('/scss/*.scss')
+    .pipe(scsslint({
+        customReport: myCustomReporter
+    }))
+});
+```
+
+## Default reporter
+
+This is an example from the default reporter output
+
+```shell
+[gulp] 3 issues found in ./test/fixtures/invalid.scss
+[gulp] ./test/fixtures/invalid.scss:2 [W] Line should be indented 2 spaces, but was indented 0 spaces
+[gulp] ./test/fixtures/invalid.scss:2 [W] Empty rule
+[gulp] ./test/fixtures/invalid.scss:3 [W] Files should end with a trailing newline
+```
+
+## Fail reporter
+
+If you want the task to fail when "scss-lint" was not a success then call `failReporter` after the scsslint call.
+
+This example will log the issues as usual and then fails if there is any issue.
+
+```js
+var scsslint = require('gulp-scss-lint');
+
+gulp.task('scss-lint', function() {
+  gulp.src('/scss/*.scss')
+    .pipe(scsslint())
+    .pipe(scsslint.failReporter())
 });
 ```
 
