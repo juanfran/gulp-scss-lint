@@ -1,7 +1,6 @@
 var pluginPath = '../src/index';
 var scssLintPlugin = require(pluginPath);
 var chai = require('chai');
-var es = require('event-stream');
 var gutil = require('gulp-util');
 var fs = require('fs');
 var expect = chai.expect;
