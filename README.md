@@ -168,6 +168,25 @@ gulp.task('scss-lint', function() {
 });
 ```
 
+You can even throw an exception
+
+```js
+var scsslint = require('gulp-scss-lint');
+
+var myCustomReporter = function(file, stream) {
+  if (!file.scsslint.success) {
+    stream.emit('error', new gutil.PluginError("scss-lint", "some error"));
+  }
+};
+
+gulp.task('scss-lint', function() {
+  gulp.src('/scss/*.scss')
+    .pipe(scsslint({
+        customReport: myCustomReporter
+    }))
+});
+```
+
 ## Default reporter
 
 This is an example from the default reporter output

@@ -123,7 +123,7 @@ var gulpScssLint = function (options) {
       files[i].scsslint = lintResult;
 
       if (options.customReport) {
-        options.customReport(files[i]);
+        options.customReport(files[i], stream);
       } else {
         reporters.defaultReporter(files[i]);
       }

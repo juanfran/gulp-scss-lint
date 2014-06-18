@@ -148,7 +148,8 @@ describe('gulp-scsslint', function() {
     var fakeFile = getFixtureFile('invalid.scss');
     var customReportSpy = sinon.spy();
 
-    var customReport = function (file) {
+    var customReport = function (file, stream) {
+      expect(stream.end).to.exist;
       expect(file.scsslint.success).to.be.false;
       expect(file.relative).to.be.equal('invalid.scss');
       customReportSpy();
@@ -159,6 +160,30 @@ describe('gulp-scsslint', function() {
     stream
       .once('end', function() {
         expect(customReportSpy.calledOnce).to.be.true;
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
+  it('custom report throw an exception', function(done) {
+    var fakeFile = getFixtureFile('invalid.scss');
+    var error = false;
+
+    var customReport = function (file, stream) {
+      stream.emit('error', new gutil.PluginError("scss-lint", "some error"));
+    };
+
+    var stream = scssLintPlugin({"customReport": customReport});
+
+    stream
+      .on('error', function (issue) {
+        expect(issue.message).to.be.equal("some error");
+        error = true;
+      })
+      .once('end', function() {
+        expect(error).to.be.true;
         done();
       });
 
