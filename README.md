@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/juanfran/gulp-scss-lint.svg?branch=master)](https://travis-ci.org/juanfran/gulp-scss-lint)
+
 #gulp-scss-lint
 
 > Lint your `.scss` files
