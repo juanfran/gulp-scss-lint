@@ -15,6 +15,8 @@ var getFixtureFile = function (path) {
   });
 }
 
+var fakeFile = getFixtureFile('invalid.scss');
+
 var getReporters = function (logMock) {
   return proxyquire('../src/reporters', {
     "gulp-util": {
@@ -24,10 +26,65 @@ var getReporters = function (logMock) {
   });
 }
 
-describe.only('reporters', function() {
-  it('default reporter, success true', function () {
-    var fakeFile = getFixtureFile('invalid.scss');
+describe('reporters', function() {
+  it('fail reporter, success true', function () {
+    var fileCount = 0;
+    var error = false;
 
+    fakeFile.scsslint = {};
+    fakeFile.scsslint.success = true;
+    fakeFile.scsslint.issues = [];
+
+    var log = sinon.spy();
+    var failReporter = getReporters(log).failReporter();
+
+    failReporter
+      .on('data', function (file) {
+        fileCount++;
+        expect(file.relative).to.be.equal('invalid.scss');
+      })
+      .on('error', function () {
+        error = true;
+      })
+      .once('end', function () {
+        expect(fileCount).to.be.equal(1);
+        expect(error).to.be.false;
+      });
+
+    failReporter.write(fakeFile);
+    failReporter.end();
+  });
+
+  it('fail reporter, success false', function () {
+    var fileCount = 0;
+    var error = false;
+
+    fakeFile.scsslint = {};
+    fakeFile.scsslint.success = false;
+    fakeFile.scsslint.issues = [];
+
+    var log = sinon.spy();
+    var failReporter = getReporters(log).failReporter();
+
+    failReporter
+      .on('data', function (file) {
+        fileCount++;
+        expect(file.relative).to.be.equal('invalid.scss');
+      })
+      .on('error', function (error) {
+        expect(error.message).to.be.equal('ScssLint failed for: invalid.scss');
+        error = true;
+      })
+      .once('end', function () {
+        expect(fileCount).to.be.equal(1);
+        expect(error).to.be.true;
+      });
+
+    failReporter.write(fakeFile);
+    failReporter.end();
+  });
+
+  it('default reporter, success true', function () {
     fakeFile.scsslint = {};
     fakeFile.scsslint.success = true;
     fakeFile.scsslint.issues = [];
@@ -39,8 +96,6 @@ describe.only('reporters', function() {
   });
 
   it('default reporter, success false', function () {
-    var fakeFile = getFixtureFile('invalid.scss');
-
     fakeFile.scsslint = {};
     fakeFile.scsslint.success = false;
     fakeFile.scsslint.issues = [
