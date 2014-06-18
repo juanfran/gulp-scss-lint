@@ -52,17 +52,18 @@ var gulpScssLint = function (options) {
 
   function execCommand(command) {
     exec(command, function (error, report) {
-
       if (error && error.code !== 65) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
         } else {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code));
         }
-      }
 
-      xmlReport = report;
-      formatCommandResult();
+        stream.emit('end');
+      } else {
+        xmlReport = report;
+        formatCommandResult();
+      }
     });
   }
 
@@ -84,9 +85,11 @@ var gulpScssLint = function (options) {
   }
 
   function getFileReport(file, report) {
-    for (var i = 0; i < report.lint.file.length; i++) {
-      if (report.lint.file[i].$.name === file.path) {
-        return report.lint.file[i];
+    if (report.lint.file) {
+      for (var i = 0; i < report.lint.file.length; i++) {
+        if (report.lint.file[i].$.name === file.path) {
+          return report.lint.file[i];
+        }
       }
     }
   }

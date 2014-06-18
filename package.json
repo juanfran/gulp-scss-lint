@@ -26,7 +26,9 @@
   },
   "devDependencies": {
     "chai": "~1.9.1",
-    "mocha": "~1.18.2"
+    "mocha": "~1.18.2",
+    "proxyquire": "^1.0.1",
+    "sinon": "^1.10.2"
   },
   "dependencies": {
     "dargs": "~0.1.0",
