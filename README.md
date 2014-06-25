@@ -69,7 +69,7 @@ scsslint({
 - Type: `String`
 - Default: `null`
 
-If you want the pipe return the XML file instead of the `.scss` file then set xmlPipeOutput with a file name
+If you want the pipe return the XML file instead of the `.scss` file then set xmlPipeOutput with a filename
 
 ```js
 gulp.src(['**/*.scss'])
@@ -108,7 +108,7 @@ gulp.task('scss-lint', function() {
 ## Lint only modified files
 You should use [gulp-cached](https://github.com/wearefractal/gulp-cached)
 
-In this example, without the gulp-cached plugin, every time you save a `.scss` file the scss-lint plugin will check all your files and with gulp-cached will only checks the modified files.
+In this example, without the gulp-cached plugin, every time you save a `.scss` file the scss-lint plugin will check all your files. In case you have gulp-cached plugin, it will only check the modified files.
 
 ```js
 var scsslint = require('gulp-scss-lint');
@@ -145,11 +145,11 @@ file.scsslint = {
 };
 ```
 
-The issues has the same parameters that [scss-lint](https://github.com/causes/scss-lint#xml)
+The issues have the same parameters that [scss-lint](https://github.com/causes/scss-lint#xml)
 
 ## Custom reporter
 
-You can replace the default console log by a custom output with `customReport`, the customReport function will be called for each file that includes the lint results [See result params](#results)
+You can replace the default console log by a custom output with `customReport`. customReport function will be called for each file that includes the lint results [See result params](#results)
 
 ```js
 var scsslint = require('gulp-scss-lint');
