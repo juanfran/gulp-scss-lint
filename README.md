@@ -121,7 +121,7 @@ gulp.task('scss-lint', function() {
 });
 
 gulp.task('watch', function() {
-  gulp.watch('/scss/*.scss', ['scss-lint');
+  gulp.watch('/scss/*.scss', ['scss-lint']);
 });
 ```
 
