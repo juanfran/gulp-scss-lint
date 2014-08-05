@@ -13,7 +13,6 @@ path = require('path'),
 reporters = require('./reporters');
 
 var stream;
-var kk;
 
 var PLUGIN_NAME = 'gulp-scss-lint';
 
@@ -52,7 +51,7 @@ var gulpScssLint = function (options) {
 
   function execCommand(command) {
     exec(command, function (error, report) {
-      if (error && error.code !== 65) {
+      if (error && error.code !== 1 && error.code !== 2 && error.code !== 65) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
         } else {
