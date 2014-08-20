@@ -16,7 +16,7 @@ var getFixtureFile = function (path) {
   });
 }
 
-describe('gulp-scsslint', function() {
+describe('gulp-scss-lint', function() {
   it('invalid scss file', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
 
@@ -45,7 +45,7 @@ describe('gulp-scsslint', function() {
 
   it('if scss-lint is not available throw an error', function(done) {
     var execStub = sinon.stub();
-    execStub.callsArgWith(1, {error: true, code: 127});
+    execStub.callsArgWith(2, {error: true, code: 127});
 
     var childProcessStub = {exec: execStub};
 

@@ -30,8 +30,8 @@ var gulpScssLint = function (options) {
   excludes = ['bundleExec',
               'xmlPipeOutput',
               'reporterOutput',
-              'customReport'
-             ];
+              'customReport',
+              'maxBuffer'];
 
   options = options || {};
   options.format = 'XML';
@@ -50,7 +50,16 @@ var gulpScssLint = function (options) {
   var files = [];
 
   function execCommand(command) {
-    exec(command, {}, function (error, report) {
+    var commandOptions = {
+      env: process.env,
+      cwd: process.cwd()
+    };
+
+    if (options.maxBuffer) {
+      commandOptions.maxBuffer = options.maxBuffer;
+    }
+
+    exec(command, commandOptions, function (error, report) {
       if (error && error.code !== 1 && error.code !== 2 && error.code !== 65) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));

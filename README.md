@@ -79,6 +79,12 @@ gulp.src(['**/*.scss'])
   .pipe(gulp.dest('./reports'))
 ```
 
+#### maxBuffer
+- Type: Number or Boolean
+- Default: node default
+
+Set maxBuffer for the child_process.exec process. If you get a `maxBuffer exceeded` error, set it with a higher number or set it to false.
+
 ## Excluding
 
 To exclude files you should use the gulp.src ignore format '!filePath''
