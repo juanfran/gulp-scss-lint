@@ -50,12 +50,14 @@ var gulpScssLint = function (options) {
   var files = [];
 
   function execCommand(command) {
-    exec(command, function (error, report) {
+    exec(command, {}, function (error, report) {
       if (error && error.code !== 1 && error.code !== 2 && error.code !== 65) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
-        } else {
+        } else if (error.code) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code));
+        } else {
+          stream.emit('error', new gutil.PluginError(PLUGIN_NAME, error));
         }
 
         stream.emit('end');
