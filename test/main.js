@@ -266,6 +266,25 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('invalid config file', function (done) {
+    var fakeFile = getFixtureFile('valid.scss');
+    var stream = scssLintPlugin({'config': './test/fixtures/invalid-default.yml'});
+    var error = false;
+
+    stream
+      .on('error', function (issue) {
+        expect(issue.message).to.have.length.above(1);
+        error = true;
+      })
+      .once('end', function() {
+        expect(error).to.be.true;
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
   it('write the xml output', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
 

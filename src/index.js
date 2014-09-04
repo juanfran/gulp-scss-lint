@@ -64,11 +64,14 @@ var gulpScssLint = function (options) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
         } else if (error.code) {
-          stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code));
+          stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
         } else {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, error));
         }
 
+        stream.emit('end');
+      } else if (error && error.code === 1 && report.length === 0) {
+        stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
         stream.emit('end');
       } else {
         xmlReport = report;
