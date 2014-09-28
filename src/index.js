@@ -34,6 +34,7 @@ var gulpScssLint = function (options) {
               'maxBuffer'];
 
   options = options || {};
+
   options.format = 'XML';
 
   if (options.exclude) {
@@ -52,12 +53,9 @@ var gulpScssLint = function (options) {
   function execCommand(command) {
     var commandOptions = {
       env: process.env,
-      cwd: process.cwd()
+      cwd: process.cwd(),
+      maxBuffer: options.maxBuffer || 300 * 1024
     };
-
-    if (options.maxBuffer) {
-      commandOptions.maxBuffer = options.maxBuffer;
-    }
 
     exec(command, commandOptions, function (error, report) {
       if (error && error.code !== 1 && error.code !== 2 && error.code !== 65) {

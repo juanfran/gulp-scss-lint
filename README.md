@@ -81,9 +81,17 @@ gulp.src(['**/*.scss'])
 
 #### maxBuffer
 - Type: Number or Boolean
-- Default: node default
+- Default: 300 * 1024
 
-Set maxBuffer for the child_process.exec process. If you get a `maxBuffer exceeded` error, set it with a higher number or set it to false.
+Set maxBuffer for the child_process.exec process. If you get a `maxBuffer exceeded` error, set it with a higher number. maxBuffer specifies the largest amount of data allowed on stdout or stderr.
+
+```js
+gulp.src(['**/*.scss'])
+  .pipe(scsslint({
+    'maxBuffer': 307200
+  }))
+  .pipe(gulp.dest('./reports'))
+```
 
 ## Excluding
 
