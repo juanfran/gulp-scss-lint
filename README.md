@@ -93,6 +93,13 @@ gulp.src(['**/*.scss'])
   .pipe(gulp.dest('./reports'))
 ```
 
+#### endless
+
+- Type: Boolean
+- Default: false
+
+If you use gulp-watch set endless to true.
+
 ## Excluding
 
 To exclude files you should use the gulp.src ignore format '!filePath''

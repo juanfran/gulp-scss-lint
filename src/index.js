@@ -31,7 +31,8 @@ var gulpScssLint = function (options) {
               'xmlPipeOutput',
               'reporterOutput',
               'customReport',
-              'maxBuffer'];
+              'maxBuffer',
+              'endless'];
 
   options = options || {};
 
@@ -50,6 +51,11 @@ var gulpScssLint = function (options) {
 
   var files = [];
 
+  function streamEnd() {
+    files = [];
+    stream.emit('end');
+  }
+
   function execCommand(command) {
     var commandOptions = {
       env: process.env,
@@ -67,10 +73,10 @@ var gulpScssLint = function (options) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, error));
         }
 
-        stream.emit('end');
+        streamEnd();
       } else if (error && error.code === 1 && report.length === 0) {
         stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
-        stream.emit('end');
+        streamEnd();
       } else {
         xmlReport = report;
         formatCommandResult();
@@ -155,18 +161,22 @@ var gulpScssLint = function (options) {
       stream.emit('data', xmlPipeFile);
     }
 
-    stream.emit('end');
+    streamEnd();
   }
 
   function writeStream(currentFile) {
     if (currentFile) {
       files.push(currentFile);
     }
+
+    if (options.endless) {
+      endStream();
+    }
   }
 
   function endStream() {
     if (!files.length) {
-      stream.emit('end');
+      streamEnd();
       return;
     }
 
