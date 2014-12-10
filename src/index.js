@@ -48,7 +48,7 @@ var gulpScssLint = function (options) {
 
   var optionsArgs = dargs(options, excludes);
 
-  var files = [];
+  var file = null;
 
   function execCommand(command) {
     var commandOptions = {
@@ -109,46 +109,45 @@ var gulpScssLint = function (options) {
     var fileReport;
     var lintResult = {};
 
-    for (var i = 0; i < files.length; i++) {
-      lintResult = defaultLintResult();
-      fileReport = getFileReport(files[i], report);
+    lintResult = defaultLintResult();
+    fileReport = getFileReport(file, report);
 
-      if (fileReport && fileReport.issue.length) {
-        lintResult.success = false;
+    if (fileReport && fileReport.issue.length) {
+      lintResult.success = false;
 
-        fileReport.issue.forEach(function (issue) {
-          issue = issue.$;
+      fileReport.issue.forEach(function (issue) {
+        issue = issue.$;
 
-          var severity = issue.severity === 'warning' ? 'W' : 'E';
+        var severity = issue.severity === 'warning' ? 'W' : 'E';
 
-          if (severity === 'W') {
-            lintResult.warnings++;
-          } else {
-            lintResult.errors++;
-          }
+        if (severity === 'W') {
+          lintResult.warnings++;
+        } else {
+          lintResult.errors++;
+        }
 
-          lintResult.issues.push(issue);
-        });
-      }
-
-      files[i].scsslint = lintResult;
-
-      if (options.customReport) {
-        options.customReport(files[i], stream);
-      } else {
-        reporters.defaultReporter(files[i]);
-      }
-
-      if (!options.xmlPipeOutput) {
-        stream.emit('data', files[i]);
-      }
+        lintResult.issues.push(issue);
+      });
     }
+
+    file.scsslint = lintResult;
+
+    if (options.customReport) {
+      options.customReport(file, stream);
+    } else {
+      reporters.defaultReporter(file);
+    }
+
+    if (!options.xmlPipeOutput) {
+      stream.emit('data', file);
+    }
+
 
     if (options.xmlPipeOutput) {
       var xmlPipeFile = new gutil.File({
-        cwd: files[0].cwd,
-        base: files[0].base,
-        path: path.join(files[0].base, options.xmlPipeOutput),
+        cwd: file.cwd,
+        base: file.base,
+        path: path.join(file.base, options.xmlPipeOutput),
         contents: new Buffer(xmlReport)
       });
 
@@ -158,27 +157,19 @@ var gulpScssLint = function (options) {
     stream.emit('end');
   }
 
-  function writeStream(currentFile) {
-    if (currentFile) {
-      files.push(currentFile);
+  function writeStream(_file_) {
+    file = _file_;
+
+    if (file) {
+      var filePath = file.path.replace(/(\s)/g, "\\ ");
+
+      var command = commandParts.concat(filePath, optionsArgs).join(' ');
+
+      execCommand(command);
     }
   }
 
-  function endStream() {
-    if (!files.length) {
-      stream.emit('end');
-      return;
-    }
-
-    var filePaths = files.map(function (file) {
-      return file.path.replace(/(\s)/g, "\\ ");
-    });
-
-    var command = commandParts.concat(filePaths, optionsArgs).join(' ');
-    execCommand(command);
-  }
-
-  stream = es.through(writeStream, endStream);
+  stream = es.through(writeStream);
   return stream;
 };
 
