@@ -31,7 +31,8 @@ var gulpScssLint = function (options) {
               'xmlPipeOutput',
               'reporterOutput',
               'customReport',
-              'maxBuffer'];
+              'maxBuffer',
+              'endless'];
 
   options = options || {};
 
@@ -48,7 +49,12 @@ var gulpScssLint = function (options) {
 
   var optionsArgs = dargs(options, excludes);
 
-  var file = null;
+  var files = [];
+
+  function streamEnd() {
+    files = [];
+    stream.emit('end');
+  }
 
   function execCommand(command) {
     var commandOptions = {
@@ -67,10 +73,10 @@ var gulpScssLint = function (options) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, error));
         }
 
-        stream.emit('end');
+        streamEnd();
       } else if (error && error.code === 1 && report.length === 0) {
         stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
-        stream.emit('end');
+        streamEnd();
       } else {
         xmlReport = report;
         formatCommandResult();
@@ -109,67 +115,80 @@ var gulpScssLint = function (options) {
     var fileReport;
     var lintResult = {};
 
-    lintResult = defaultLintResult();
-    fileReport = getFileReport(file, report);
+    for (var i = 0; i < files.length; i++) {
+      lintResult = defaultLintResult();
+      fileReport = getFileReport(files[i], report);
 
-    if (fileReport && fileReport.issue.length) {
-      lintResult.success = false;
+      if (fileReport && fileReport.issue.length) {
+        lintResult.success = false;
 
-      fileReport.issue.forEach(function (issue) {
-        issue = issue.$;
+        fileReport.issue.forEach(function (issue) {
+          issue = issue.$;
 
-        var severity = issue.severity === 'warning' ? 'W' : 'E';
+          var severity = issue.severity === 'warning' ? 'W' : 'E';
 
-        if (severity === 'W') {
-          lintResult.warnings++;
-        } else {
-          lintResult.errors++;
-        }
+          if (severity === 'W') {
+            lintResult.warnings++;
+          } else {
+            lintResult.errors++;
+          }
 
-        lintResult.issues.push(issue);
-      });
+          lintResult.issues.push(issue);
+        });
+      }
+
+      files[i].scsslint = lintResult;
+
+      if (options.customReport) {
+        options.customReport(files[i], stream);
+      } else {
+        reporters.defaultReporter(files[i]);
+      }
+
+      if (!options.xmlPipeOutput) {
+        stream.emit('data', files[i]);
+      }
     }
-
-    file.scsslint = lintResult;
-
-    if (options.customReport) {
-      options.customReport(file, stream);
-    } else {
-      reporters.defaultReporter(file);
-    }
-
-    if (!options.xmlPipeOutput) {
-      stream.emit('data', file);
-    }
-
 
     if (options.xmlPipeOutput) {
       var xmlPipeFile = new gutil.File({
-        cwd: file.cwd,
-        base: file.base,
-        path: path.join(file.base, options.xmlPipeOutput),
+        cwd: files[0].cwd,
+        base: files[0].base,
+        path: path.join(files[0].base, options.xmlPipeOutput),
         contents: new Buffer(xmlReport)
       });
 
       stream.emit('data', xmlPipeFile);
     }
 
-    stream.emit('end');
+    streamEnd();
   }
 
-  function writeStream(_file_) {
-    file = _file_;
+  function writeStream(currentFile) {
+    if (currentFile) {
+      files.push(currentFile);
+    }
 
-    if (file) {
-      var filePath = file.path.replace(/(\s)/g, "\\ ");
-
-      var command = commandParts.concat(filePath, optionsArgs).join(' ');
-
-      execCommand(command);
+    if (options.endless) {
+      endStream();
     }
   }
 
-  stream = es.through(writeStream);
+  function endStream() {
+    if (!files.length) {
+      streamEnd();
+      return;
+    }
+
+    var filePaths = files.map(function (file) {
+      return file.path.replace(/(\s)/g, "\\ ");
+    });
+
+    var command = commandParts.concat(filePaths, optionsArgs).join(' ');
+    execCommand(command);
+  }
+
+  stream = es.through(writeStream, endStream);
   return stream;
 };
 
