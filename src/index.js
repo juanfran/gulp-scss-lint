@@ -24,6 +24,8 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
+var isWin = /^win/.test(require('os').platform());
+
 var gulpScssLint = function (options) {
   var xmlReport = '',
   commandParts = ['scss-lint'],
@@ -180,8 +182,6 @@ var gulpScssLint = function (options) {
       streamEnd();
       return;
     }
-
-    var isWin = /^win/.test(require('os').platform());
 
     var filePaths = files.map(function (file) {
       if (isWin) {
