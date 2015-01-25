@@ -57,6 +57,7 @@ var gulpScssLint = function (options) {
   }
 
   function execCommand(command) {
+    console.log(command);
     var commandOptions = {
       env: process.env,
       cwd: process.cwd(),
@@ -180,8 +181,14 @@ var gulpScssLint = function (options) {
       return;
     }
 
+    var isWin = /^win/.test(require('os').platform());
+
     var filePaths = files.map(function (file) {
-      return file.path.replace(/(\s)/g, "\\ ");
+      if (isWin) {
+        return '"' + file.path + '"';
+      } else {
+        return file.path.replace(/(\s)/g, "\\ ");
+      }
     });
 
     var command = commandParts.concat(filePaths, optionsArgs).join(' ');
