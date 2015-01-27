@@ -34,7 +34,8 @@ var gulpScssLint = function (options) {
               'reporterOutput',
               'customReport',
               'maxBuffer',
-              'endless'];
+              'endless',
+              'verbose'];
 
   options = options || {};
 
@@ -59,7 +60,10 @@ var gulpScssLint = function (options) {
   }
 
   function execCommand(command) {
-    console.log(command);
+    if (options.verbose) {
+      console.log(command);
+    }
+
     var commandOptions = {
       env: process.env,
       cwd: process.cwd(),
