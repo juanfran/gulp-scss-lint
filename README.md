@@ -100,6 +100,13 @@ gulp.src(['**/*.scss'])
 
 If you use gulp-watch set endless to true.
 
+#### verbose
+
+- Type: Boolean
+- Default: false
+
+If you want to see the executed scss-lint command for debugging purposes, set this to true.
+
 ## Excluding
 
 To exclude files you should use the gulp.src ignore format '!filePath''
