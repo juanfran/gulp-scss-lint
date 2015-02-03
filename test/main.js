@@ -25,8 +25,8 @@ describe('gulp-scss-lint', function() {
     stream
       .on('data', function (file) {
         expect(file.scsslint.success).to.be.false;
-        expect(file.scsslint.issues).to.have.length(3);
-        expect(file.scsslint.warnings).to.equal(3);
+        expect(file.scsslint.issues).to.have.length(4);
+        expect(file.scsslint.warnings).to.equal(4);
         expect(file.scsslint.errors).to.equal(0);
 
         expect(file.scsslint.issues[0].line).to.exist;
@@ -80,7 +80,7 @@ describe('gulp-scss-lint', function() {
     var stream = scssLintPlugin();
 
     var results = [
-      {'issues': 3, 'warnings': 3, 'errors': 0},
+      {'issues': 4, 'warnings': 4, 'errors': 0},
       {'issues': 1, 'warnings': 0, 'errors': 1},
     ];
 

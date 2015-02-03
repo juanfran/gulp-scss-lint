@@ -3,9 +3,9 @@ GEM
   specs:
     rainbow (2.0.0)
     sass (3.3.8)
-    scss-lint (0.24.1)
+    scss-lint (0.33.0)
       rainbow (~> 2.0)
-      sass (~> 3.3.0)
+      sass (~> 3.4.5)
 
 PLATFORMS
   ruby
