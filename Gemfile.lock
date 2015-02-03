@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     rainbow (2.0.0)
-    sass (3.3.8)
+    sass (3.4.5)
     scss-lint (0.33.0)
       rainbow (~> 2.0)
       sass (~> 3.4.5)
