@@ -100,6 +100,13 @@ gulp.src(['**/*.scss'])
 
 If you use gulp-watch set endless to true.
 
+#### sync
+
+- Type: Boolean
+- Default: sync
+
+`scss-lint` will be executed in sequence.
+
 #### verbose
 
 - Type: Boolean

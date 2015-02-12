@@ -4,7 +4,7 @@ var es = require('event-stream'),
 readline = require('readline'),
 fs = require('fs'),
 dargs = require('dargs'),
-exec = require('child_process').exec,
+child_process = require('child_process'),
 gutil = require('gulp-util'),
 colors = gutil.colors,
 xml2js = require('xml2js').parseString,
@@ -35,7 +35,8 @@ var gulpScssLint = function (options) {
               'customReport',
               'maxBuffer',
               'endless',
-              'verbose'];
+              'verbose',
+              'sync'];
 
   options = options || {};
 
@@ -54,23 +55,43 @@ var gulpScssLint = function (options) {
 
   var files = [];
 
+  var commandOptions = {
+      env: process.env,
+      cwd: process.cwd(),
+      maxBuffer: options.maxBuffer || 300 * 1024
+  };
+
+  function execCommand(command, fn) {
+      if (options.sync || options.endless) {
+          if (child_process.execSync) {
+              child_process.execSync(command, commandOptions, fn);
+          } else {
+              var sh = require('execSync');
+
+              var result = sh.exec(command);
+              var error;
+
+              if (result.code) {
+                  error = {code: result.code};
+              }
+
+              fn(error, result.stdout);
+          }
+      } else {
+          child_process.exec(command, commandOptions, fn);
+      }
+  }
+
   function streamEnd() {
     files = [];
     stream.emit('end');
   }
 
-  function execCommand(command) {
+  function execLintCommand(command) {
     if (options.verbose) {
       console.log(command);
     }
-
-    var commandOptions = {
-      env: process.env,
-      cwd: process.cwd(),
-      maxBuffer: options.maxBuffer || 300 * 1024
-    };
-
-    exec(command, commandOptions, function (error, report) {
+    execCommand(command, function (error, report) {
       if (error && error.code !== 1 && error.code !== 2 && error.code !== 65) {
         if (scssLintCodes[error.code]) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
@@ -172,12 +193,11 @@ var gulpScssLint = function (options) {
   }
 
   function writeStream(currentFile) {
-    if (currentFile) {
-      files.push(currentFile);
-    }
-
     if (options.endless) {
+      files.push(currentFile);
       endStream();
+    } else {
+      files.push(currentFile);
     }
   }
 
@@ -196,7 +216,7 @@ var gulpScssLint = function (options) {
     });
 
     var command = commandParts.concat(filePaths, optionsArgs).join(' ');
-    execCommand(command);
+    execLintCommand(command);
   }
 
   stream = es.through(writeStream, endStream);
