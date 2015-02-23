@@ -101,6 +101,7 @@ describe('reporters', function() {
     fakeFile.scsslint.issues = [
       {"severity": "warning",
        "line": 10,
+       "linter": "some linter",
        "reason": "some reasone"},
       {"severity": "error",
        "line": 13,
@@ -114,10 +115,10 @@ describe('reporters', function() {
 
     var firstCall = log.withArgs(colors.cyan(fakeFile.scsslint.issues.length) + ' issues found in ' + colors.magenta(fakeFile.path)).calledOnce;
 
-    var secondCall = log.withArgs(colors.cyan(fakeFile.path) + ':' + colors.magenta(fakeFile.scsslint.issues[0].line) + ' [W] ' + fakeFile.scsslint.issues[0].reason).calledOnce;
+    var secondCall = log.withArgs(colors.cyan(fakeFile.relative) + ':' + colors.magenta(fakeFile.scsslint.issues[0].line) + colors.yellow(' [W] ') + colors.green(fakeFile.scsslint.issues[0].linter + ': ') + fakeFile.scsslint.issues[0].reason).calledOnce;
 
 
-    var thirdCall = log.withArgs(colors.cyan(fakeFile.path) + ':' + colors.magenta(fakeFile.scsslint.issues[1].line) + ' [E] ' + fakeFile.scsslint.issues[1].reason).calledOnce;
+    var thirdCall = log.withArgs(colors.cyan(fakeFile.relative) + ':' + colors.magenta(fakeFile.scsslint.issues[1].line) + colors.red(' [E] ') + fakeFile.scsslint.issues[1].reason).calledOnce;
 
     expect(firstCall).to.be.ok;
     expect(secondCall).to.be.ok;
