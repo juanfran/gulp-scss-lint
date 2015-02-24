@@ -24,8 +24,10 @@ exports.defaultReporter = function (file) {
     gutil.log(colors.cyan(file.scsslint.issues.length) + ' issues found in ' + colors.magenta(file.path));
 
     file.scsslint.issues.forEach(function (issue) {
-      var severity = issue.severity === 'warning' ? 'W' : 'E';
-      var logMsg = colors.cyan(file.path) + ':' + colors.magenta(issue.line) + ' [' + severity + '] ' + issue.reason;
+      var severity = issue.severity === 'warning' ? colors.yellow(' [W] ') : colors.red(' [E] ');
+      var linter = issue.linter ? (issue.linter + ': ') : ''
+      var logMsg =
+        colors.cyan(file.relative) + ':' + colors.magenta(issue.line) + severity + colors.green(linter) + issue.reason;
 
       gutil.log(logMsg);
     });
