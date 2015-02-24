@@ -227,10 +227,10 @@ gulp.task('scss-lint', function() {
 This is an example from the default reporter output
 
 ```shell
-[gulp] 3 issues found in ./test/fixtures/invalid.scss
-[gulp] ./test/fixtures/invalid.scss:2 [W] Line should be indented 2 spaces, but was indented 0 spaces
-[gulp] ./test/fixtures/invalid.scss:2 [W] Empty rule
-[gulp] ./test/fixtures/invalid.scss:3 [W] Files should end with a trailing newline
+[20:55:10] 3 issues found in test/fixtures/invalid.scss
+[20:55:10] test/fixtures/invalid.scss:1 [W] IdSelector: Avoid using id selectors
+[20:55:10] test/fixtures/invalid.scss:2 [W] Indentation: Line should be indented 2 spaces, but was indented 0 spaces
+[20:55:10] test/fixtures/invalid.scss:2 [W] EmptyRule: Empty rule
 ```
 
 ## Fail reporter
