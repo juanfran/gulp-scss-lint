@@ -64,9 +64,13 @@ var gulpScssLint = function (options) {
   function execCommand(command, fn) {
     if (options.sync || options.endless) {
       if (child_process.execSync) {
-        //TODO: error handler
-        var result = child_process.execSync(command, commandOptions.sync);
-        fn(null, result);
+        try {
+          var result = child_process.execSync(command, commandOptions.sync);
+          fn(null, result);
+        } catch (result) {
+          var error = {code: result.status};
+          fn(error, result.stdout);
+        }
       } else {
         var sh = require('execSync');
 
