@@ -62,24 +62,26 @@ var gulpScssLint = function (options) {
   };
 
   function execCommand(command, fn) {
-      if (options.sync || options.endless) {
-          if (child_process.execSync) {
-              child_process.execSync(command, commandOptions, fn);
-          } else {
-              var sh = require('execSync');
-
-              var result = sh.exec(command);
-              var error;
-
-              if (result.code) {
-                  error = {code: result.code};
-              }
-
-              fn(error, result.stdout);
-          }
+    if (options.sync || options.endless) {
+      if (child_process.execSync) {
+        //TODO: error handler
+        var result = child_process.execSync(command, commandOptions.sync);
+        fn(null, result);
       } else {
-          child_process.exec(command, commandOptions, fn);
+        var sh = require('execSync');
+
+        var result = sh.exec(command);
+        var error;
+
+        if (result.code) {
+          error = {code: result.code};
+        }
+
+        fn(error, result.stdout);
       }
+    } else {
+      child_process.exec(command, commandOptions.async, fn);
+    }
   }
 
   function streamEnd() {
