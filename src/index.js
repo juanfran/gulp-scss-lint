@@ -55,13 +55,13 @@ var gulpScssLint = function (options) {
 
   var files = [];
 
-  var commandOptions = {
+  function execCommand(command, fn) {
+    var commandOptions = {
       env: process.env,
       cwd: process.cwd(),
       maxBuffer: options.maxBuffer || 300 * 1024
-  };
+    };
 
-  function execCommand(command, fn) {
     if (options.sync || options.endless) {
       if (child_process.execSync) {
         try {
