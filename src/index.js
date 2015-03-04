@@ -65,7 +65,7 @@ var gulpScssLint = function (options) {
     if (options.sync || options.endless) {
       if (child_process.execSync) {
         try {
-          var result = child_process.execSync(command, commandOptions.sync);
+          var result = child_process.execSync(command, commandOptions);
           fn(null, result);
         } catch (result) {
           var error = {code: result.status};
@@ -84,7 +84,7 @@ var gulpScssLint = function (options) {
         fn(error, result.stdout);
       }
     } else {
-      child_process.exec(command, commandOptions.async, fn);
+      child_process.exec(command, commandOptions, fn);
     }
   }
 
