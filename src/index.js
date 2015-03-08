@@ -8,7 +8,6 @@ child_process = require('child_process'),
 gutil = require('gulp-util'),
 colors = gutil.colors,
 xml2js = require('xml2js').parseString,
-fs = require('fs'),
 path = require('path'),
 reporters = require('./reporters');
 
