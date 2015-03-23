@@ -9,6 +9,7 @@ gutil = require('gulp-util'),
 colors = gutil.colors,
 xml2js = require('xml2js').parseString,
 path = require('path'),
+pd = require('pretty-data').pd,
 reporters = require('./reporters');
 
 var stream;
@@ -111,7 +112,7 @@ var gulpScssLint = function (options) {
         stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
         streamEnd();
       } else {
-        xmlReport = report;
+        xmlReport = pd.xml(report);
         formatCommandResult();
       }
     });
