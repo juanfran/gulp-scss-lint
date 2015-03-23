@@ -27,7 +27,7 @@ var getReporters = function (logMock) {
 }
 
 describe('reporters', function() {
-  it('fail reporter, success true', function () {
+  it('fail reporter, success true', function (done) {
     var fileCount = 0;
     var error = false;
 
@@ -49,14 +49,14 @@ describe('reporters', function() {
       .once('end', function () {
         expect(fileCount).to.be.equal(1);
         expect(error).to.be.false;
+        done();
       });
 
     failReporter.write(fakeFile);
-    failReporter.end();
+    failReporter.emit('end');
   });
 
-  it('fail reporter, success false', function () {
-    var fileCount = 0;
+  it('fail reporter, success false', function (done) {
     var error = false;
 
     fakeFile.scsslint = {};
@@ -67,21 +67,72 @@ describe('reporters', function() {
     var failReporter = getReporters(log).failReporter();
 
     failReporter
-      .on('data', function (file) {
-        fileCount++;
-        expect(file.relative).to.be.equal('invalid.scss');
-      })
-      .on('error', function (error) {
-        expect(error.message).to.be.equal('ScssLint failed for: invalid.scss');
+      .on('error', function (err) {
+        expect(err.message).to.be.equal('ScssLint failed for: invalid.scss');
         error = true;
       })
-      .once('end', function () {
-        expect(fileCount).to.be.equal(1);
+      .on('end', function () {
         expect(error).to.be.true;
+        done();
       });
 
     failReporter.write(fakeFile);
-    failReporter.end();
+    failReporter.emit('end');
+  });
+
+  describe('fail reporter, only errors', function () {
+    it('the scss has errors', function (done) {
+      fakeFile.scsslint = {};
+      fakeFile.scsslint.success = false;
+      fakeFile.scsslint.errors = 1;
+      fakeFile.scsslint.issues = [];
+
+      var error = false;
+      var log = sinon.spy();
+      var failReporter = getReporters(log).failReporter("E");
+
+      failReporter
+        .on('error', function (err) {
+          expect(err.message).to.be.equal('ScssLint failed for: invalid.scss');
+          error = true;
+        })
+        .once('end', function () {
+          expect(error).to.be.true;
+          done();
+        });
+
+      failReporter.write(fakeFile);
+      failReporter.emit('end');
+    });
+
+    it('the scss does not have errors', function (done) {
+      fakeFile.scsslint = {};
+      fakeFile.scsslint.success = false;
+      fakeFile.scsslint.errors = 0;
+      fakeFile.scsslint.issues = [];
+
+      var fileCount = 0;
+      var error = false;
+      var log = sinon.spy();
+      var failReporter = getReporters(log).failReporter("E");
+
+      failReporter
+        .on('data', function (file) {
+          fileCount++;
+          expect(file.relative).to.be.equal('invalid.scss');
+        })
+        .on('error', function () {
+          error = true;
+        })
+        .once('end', function () {
+          expect(fileCount).to.be.equal(1);
+          expect(error).to.be.false;
+          done();
+        });
+
+      failReporter.write(fakeFile);
+      failReporter.emit('end');
+    });
   });
 
   it('default reporter, success true', function () {

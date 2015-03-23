@@ -249,6 +249,18 @@ gulp.task('scss-lint', function() {
 });
 ```
 
+if you just want `failReporter` to fail just with errors pass the 'E' string
+
+```js
+var scsslint = require('gulp-scss-lint');
+
+gulp.task('scss-lint', function() {
+  gulp.src('/scss/*.scss')
+    .pipe(scsslint())
+    .pipe(scsslint.failReporter('E'))
+});
+```
+
 ## Testing
 
 To test you must first have `scss-lint` installed globally using

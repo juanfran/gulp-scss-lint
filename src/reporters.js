@@ -4,15 +4,17 @@ var es = require('event-stream'),
 gutil = require('gulp-util'),
 colors = gutil.colors;
 
-exports.failReporter = function () {
+exports.failReporter = function (severity) {
   return es.map(function(file, cb) {
     var error
 
     if (!file.scsslint.success) {
-      error = new gutil.PluginError('gulp-scss-lint', {
-        message: 'ScssLint failed for: ' + file.relative,
-        showStack: false
-      });
+      if (!severity || severity === 'E' && file.scsslint.errors > 0) {
+        error = new gutil.PluginError('gulp-scss-lint', {
+          message: 'ScssLint failed for: ' + file.relative,
+          showStack: false
+        });
+      }
     }
 
     cb(error, file);
