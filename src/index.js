@@ -72,13 +72,13 @@ var gulpScssLint = function (options) {
           fn(error, result.stdout);
         }
       } else {
-        var sh = require('execSync');
+        var exec = require('sync-exec');
 
-        var result = sh.exec(command);
+        var result = exec(command);
         var error;
 
-        if (result.code) {
-          error = {code: result.code};
+        if (result.status) {
+          error = {code: result.status};
         }
 
         fn(error, result.stdout);

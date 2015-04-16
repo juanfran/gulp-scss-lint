@@ -33,7 +33,7 @@
   "dependencies": {
     "dargs": "~3.0.0",
     "event-stream": "~3.2.2",
-    "execSync": "^1.0.2",
+    "sync-exec": "~0.5.0",
     "gulp-util": "~3.0.3",
     "pretty-data": "^0.40.0",
     "xml2js": "^0.4.4"
