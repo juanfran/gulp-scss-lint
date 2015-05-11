@@ -40,7 +40,8 @@ var gulpScssLint = function (options) {
 
   options = options || {};
 
-  options.format = 'XML';
+  options.format = 'Checkstyle';
+  options.require = 'scss_lint_reporter_checkstyle';
 
   if (options.exclude) {
     throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
@@ -136,10 +137,10 @@ var gulpScssLint = function (options) {
   }
 
   function getFileReport(file, report) {
-    if (report.lint.file) {
-      for (var i = 0; i < report.lint.file.length; i++) {
-        if (report.lint.file[i].$.name === file.path) {
-          return report.lint.file[i];
+    if (report.checkstyle.file) {
+      for (var i = 0; i < report.checkstyle.file.length; i++) {
+        if (report.checkstyle.file[i].$.name === file.path) {
+          return report.checkstyle.file[i];
         }
       }
     }
@@ -153,10 +154,10 @@ var gulpScssLint = function (options) {
       lintResult = defaultLintResult();
       fileReport = getFileReport(files[i], report);
 
-      if (fileReport && fileReport.issue.length) {
+      if (fileReport && fileReport.error.length) {
         lintResult.success = false;
 
-        fileReport.issue.forEach(function (issue) {
+        fileReport.error.forEach(function (issue) {
           issue = issue.$;
 
           var severity = issue.severity === 'warning' ? 'W' : 'E';
