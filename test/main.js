@@ -33,7 +33,7 @@ describe('gulp-scss-lint', function() {
         expect(file.scsslint.issues[0].column).to.exist;
         expect(file.scsslint.issues[0].length).to.exist;
         expect(file.scsslint.issues[0].severity).to.exist;
-        expect(file.scsslint.issues[0].reason).to.exist;
+        expect(file.scsslint.issues[0].message).to.exist;
       })
       .once('end', function() {
         done();
@@ -198,7 +198,7 @@ describe('gulp-scss-lint', function() {
     stream
       .on('data', function (data) {
         expect(data.contents.toString('utf-8')).to.have.string('<?xml');
-        expect(data.contents.toString('utf-8')).to.have.string('</lint>');
+        expect(data.contents.toString('utf-8')).to.have.string('</checkstyle>');
         expect(data.path).to.be.equal('test/fixtures/test.xml');
       })
       .once('end', function() {

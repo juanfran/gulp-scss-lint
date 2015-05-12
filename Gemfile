@@ -1,2 +1,3 @@
 source 'https://rubygems.org'
-gem 'scss-lint'
+gem 'scss_lint'
+gem 'scss_lint_reporter_checkstyle'
