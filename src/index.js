@@ -229,6 +229,7 @@ var gulpScssLint = function (options) {
   return stream;
 };
 
-gulpScssLint.failReporter = reporters.failReporter
+gulpScssLint.failReporter = reporters.failReporter;
+gulpScssLint.defaultReporter = reporters.defaultReporter;
 
 module.exports = gulpScssLint;
