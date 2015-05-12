@@ -33,7 +33,7 @@ describe('gulp-scss-lint', function() {
         expect(file.scsslint.issues[0].column).to.exist;
         expect(file.scsslint.issues[0].length).to.exist;
         expect(file.scsslint.issues[0].severity).to.exist;
-        expect(file.scsslint.issues[0].message).to.exist;
+        expect(file.scsslint.issues[0].reason).to.exist;
       })
       .once('end', function() {
         done();
@@ -61,6 +61,36 @@ describe('gulp-scss-lint', function() {
       })
       .on('error', function (issue) {
         expect(issue.message).to.equal('You need to have Ruby and scss-lint gem installed');
+        error = true;
+      })
+      .once('end', function() {
+        expect(fileCount).to.equal(0);
+        expect(error).to.be.true;
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
+  it('if scss_lint_reporter_checkstyle is not available throw an error', function(done) {
+    var execStub = sinon.stub();
+    execStub.callsArgWith(2, {error: true, code: 69});
+
+    var childProcessStub = {exec: execStub};
+
+    var scssLintPluginWithProxy = proxyquire(pluginPath, {'child_process':  childProcessStub});
+    var fakeFile = getFixtureFile('invalid.scss');
+    var fileCount = 0;
+    var stream = scssLintPluginWithProxy();
+    var error = false;
+
+    stream
+      .on('data', function (file) {
+        fileCount++;
+      })
+      .on('error', function (issue) {
+        expect(issue.message).to.equal('You need to have the scss_lint_reporter_checkstyle gem installed');
         error = true;
       })
       .once('end', function() {
@@ -191,9 +221,26 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('file pipe output', function(done) {
+    var fakeFile = getFixtureFile('invalid.scss');
+    var stream = scssLintPlugin({"filePipeOutput": "test.json"});
+
+    stream
+      .on('data', function (data) {
+        expect(data.contents.toString('utf-8')).to.have.length.above(20);
+        expect(data.path).to.be.equal('test/fixtures/test.json');
+      })
+      .once('end', function() {
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
   it('xml pipe output', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
-    var stream = scssLintPlugin({"xmlPipeOutput": "test.xml"});
+    var stream = scssLintPlugin({"filePipeOutput": "test.xml", 'reporterOutputFormat': 'Checkstyle'});
 
     stream
       .on('data', function (data) {
@@ -285,6 +332,30 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('write the json output', function(done) {
+    var fakeFile = getFixtureFile('invalid.scss');
+
+    var writeFileSpy = sinon.spy();
+    var writeFileStubFunction = function (reporterOutput, report) {
+      expect(reporterOutput).to.equal('test.json');
+      expect(report).to.have.length.above(1);
+
+      writeFileSpy();
+    };
+
+    var scssLintPluginWithProxy = proxyquire(pluginPath, {fs:  {writeFile: writeFileStubFunction}});
+    var stream = scssLintPluginWithProxy({reporterOutput: 'test.json'});
+
+    stream
+      .once('end', function() {
+        expect(writeFileSpy.calledOnce).to.be.true;
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
   it('write the xml output', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
 
@@ -297,7 +368,7 @@ describe('gulp-scss-lint', function() {
     };
 
     var scssLintPluginWithProxy = proxyquire(pluginPath, {fs:  {writeFile: writeFileStubFunction}});
-    var stream = scssLintPluginWithProxy({reporterOutput: 'test.xml'});
+    var stream = scssLintPluginWithProxy({reporterOutput: 'test.xml', reporterOutputFormat: 'Checkstyle'});
 
     stream
       .once('end', function() {

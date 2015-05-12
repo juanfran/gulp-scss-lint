@@ -56,25 +56,47 @@ scsslint({
 - Type: `String`
 - Default: `null`
 
-If you want to save the report to a XML file then set reporterOutput with a file name
+If you want to save the report to a file then set reporterOutput with a file name
 
 ```js
 scsslint({
-    'reporterOutput': 'scssReport.xml'
+    'reporterOutput': 'scssReport.json'
 });
 ```
 
-#### xmlPipeOutput
+#### reporterOutputFormat
 
 - Type: `String`
-- Default: `null`
-
-If you want the pipe return the XML file instead of the `.scss` file then set xmlPipeOutput with a filename
+- Default: `JSON`
+- Values: `JSON` or `Checkstyle`
 
 ```js
 gulp.src(['**/*.scss'])
   .pipe(scsslint({
-    'xmlPipeOutput': 'scssReport.xml'
+    'reporterOutputFormat': 'Checkstyle',
+  }))
+```
+
+#### filePipeOutput
+
+- Type: `String`
+- Default: `null`
+
+If you want the pipe return a report file instead of the `.scss` file then set filePipeOutput with a filename
+
+```js
+//xml
+gulp.src(['**/*.scss'])
+  .pipe(scsslint({
+    'reporterOutputFormat': 'Checkstyle',
+    'filePipeOutput': 'scssReport.xml'
+  }))
+  .pipe(gulp.dest('./reports'))
+
+//json
+gulp.src(['**/*.scss'])
+  .pipe(scsslint({
+    'filePipeOutput': 'scssReport.json'
   }))
   .pipe(gulp.dest('./reports'))
 ```

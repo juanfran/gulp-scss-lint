@@ -7,10 +7,9 @@ dargs = require('dargs'),
 child_process = require('child_process'),
 gutil = require('gulp-util'),
 colors = gutil.colors,
-xml2js = require('xml2js').parseString,
 path = require('path'),
-pd = require('pretty-data').pd,
-reporters = require('./reporters');
+reporters = require('./reporters'),
+checkstyle = require('./checkstyle');
 
 var stream;
 
@@ -19,6 +18,7 @@ var PLUGIN_NAME = 'gulp-scss-lint';
 var scssLintCodes = {
   '64': 'Command line usage error',
   '66': 'Input file did not exist or was not readable',
+  '69': 'You need to have the scss_lint_reporter_checkstyle gem installed',
   '70': 'Internal software error',
   '78': 'Configuration error',
   '127': 'You need to have Ruby and scss-lint gem installed'
@@ -27,11 +27,11 @@ var scssLintCodes = {
 var isWin = /^win/.test(require('os').platform());
 
 var gulpScssLint = function (options) {
-  var xmlReport = '',
-  commandParts = ['scss-lint'],
+  var commandParts = ['scss-lint'],
   excludes = ['bundleExec',
-              'xmlPipeOutput',
+              'filePipeOutput',
               'reporterOutput',
+              'reporterOutputFormat',
               'customReport',
               'maxBuffer',
               'endless',
@@ -40,8 +40,12 @@ var gulpScssLint = function (options) {
 
   options = options || {};
 
-  options.format = 'Checkstyle';
-  options.require = 'scss_lint_reporter_checkstyle';
+  options.format = 'JSON';
+
+  if (options.reporterOutputFormat === 'Checkstyle') {
+    options.format = 'Checkstyle';
+    options.require = 'scss_lint_reporter_checkstyle';
+  }
 
   if (options.exclude) {
     throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
@@ -94,7 +98,7 @@ var gulpScssLint = function (options) {
     stream.emit('end');
   }
 
-  function execLintCommand(command) {
+  function execLintCommand(command, cb) {
     if (options.verbose) {
       console.log(command);
     }
@@ -112,19 +116,14 @@ var gulpScssLint = function (options) {
       } else if (error && error.code === 1 && report.length === 0) {
         stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
         streamEnd();
-      } else {
-        xmlReport = pd.xml(report);
-        formatCommandResult();
+      } else  {
+        if (options.format === 'JSON'){
+          cb(JSON.parse(report));
+        } else {
+          checkstyle.toJSON(report, cb);
+        }
       }
     });
-  }
-
-  function formatCommandResult () {
-    if (options.reporterOutput) {
-      fs.writeFile(options.reporterOutput, xmlReport);
-    }
-
-    xml2js(xmlReport, reportLint);
   }
 
   function defaultLintResult() {
@@ -136,30 +135,26 @@ var gulpScssLint = function (options) {
     };
   }
 
-  function getFileReport(file, report) {
-    if (report.checkstyle.file) {
-      for (var i = 0; i < report.checkstyle.file.length; i++) {
-        if (report.checkstyle.file[i].$.name === file.path) {
-          return report.checkstyle.file[i];
-        }
+  function reportLint(report, xmlReport) {
+    if (options.reporterOutput) {
+      if (xmlReport) {
+        fs.writeFile(options.reporterOutput, xmlReport);
+      } else {
+        fs.writeFile(options.reporterOutput, JSON.stringify(report));
       }
     }
-  }
 
-  function reportLint(err, report) {
     var fileReport;
     var lintResult = {};
 
     for (var i = 0; i < files.length; i++) {
       lintResult = defaultLintResult();
-      fileReport = getFileReport(files[i], report);
+      fileReport = report[files[i].path];
 
-      if (fileReport && fileReport.error.length) {
+      if (fileReport) {
         lintResult.success = false;
 
-        fileReport.error.forEach(function (issue) {
-          issue = issue.$;
-
+        fileReport.forEach(function (issue) {
           var severity = issue.severity === 'warning' ? 'W' : 'E';
 
           if (severity === 'W') {
@@ -180,20 +175,28 @@ var gulpScssLint = function (options) {
         reporters.defaultReporter(files[i]);
       }
 
-      if (!options.xmlPipeOutput) {
+      if (!options.filePipeOutput) {
         stream.emit('data', files[i]);
       }
     }
 
-    if (options.xmlPipeOutput) {
-      var xmlPipeFile = new gutil.File({
+    if (options.filePipeOutput) {
+      var contentFile = "";
+
+      if (xmlReport) {
+        contentFile = xmlReport;
+      } else {
+        contentFile = JSON.stringify(report);
+      }
+
+      var pipeFile = new gutil.File({
         cwd: files[0].cwd,
         base: files[0].base,
-        path: path.join(files[0].base, options.xmlPipeOutput),
-        contents: new Buffer(xmlReport)
+        path: path.join(files[0].base, options.filePipeOutput),
+        contents: new Buffer(contentFile)
       });
 
-      stream.emit('data', xmlPipeFile);
+      stream.emit('data', pipeFile);
     }
 
     streamEnd();
@@ -223,7 +226,7 @@ var gulpScssLint = function (options) {
     });
 
     var command = commandParts.concat(filePaths, optionsArgs).join(' ');
-    execLintCommand(command);
+    execLintCommand(command, reportLint);
   }
 
   stream = es.through(writeStream, endStream);
