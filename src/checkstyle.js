@@ -9,6 +9,8 @@ exports.toJSON = function (report, cb) {
   var error = [];
 
   xml2js(xmlReport, function(err, report) {
+    report.checkstyle.file = report.checkstyle.file || [];
+
     report.checkstyle.file.forEach(function(file) {
         obj[file.$.name] = [];
 

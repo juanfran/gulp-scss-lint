@@ -256,6 +256,24 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('valid xml pipe output', function(done) {
+    var fakeFile = getFixtureFile('valid.scss');
+    var stream = scssLintPlugin({"filePipeOutput": "test.xml", 'reporterOutputFormat': 'Checkstyle'});
+
+    stream
+      .on('data', function (data) {
+        expect(data.contents.toString('utf-8')).to.have.string('<?xml');
+        expect(data.contents.toString('utf-8')).to.have.string('</checkstyle>');
+        expect(data.path).to.be.equal('test/fixtures/test.xml');
+      })
+      .once('end', function() {
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
   it('should not fail without files', function(done) {
     var stream = scssLintPlugin();
     var fileCount = 0;
