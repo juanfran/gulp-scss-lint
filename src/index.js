@@ -53,7 +53,7 @@ var gulpScssLint = function (options) {
 
   if (options.bundleExec) {
     commandParts.unshift('bundle', 'exec');
-    excludes.push('bundleExec')
+    excludes.push('bundleExec');
   }
 
   var optionsArgs = dargs(options, excludes);
@@ -98,14 +98,23 @@ var gulpScssLint = function (options) {
     stream.emit('end');
   }
 
+  function configFileReadError(report) {
+    return report.indexOf('No such file or directory - ' + options.config) !== -1;
+  }
+
   function execLintCommand(command, cb) {
     if (options.verbose) {
       console.log(command);
     }
+
     execCommand(command, function (error, report) {
       if (error && error.code !== 1 && error.code !== 2 && error.code !== 65) {
         if (scssLintCodes[error.code]) {
-          stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
+          if (error.code === 66 && configFileReadError(report)) {
+            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Config file did not exist or was not readable'));
+          } else {
+            stream.emit('error', new gutil.PluginError(PLUGIN_NAME, scssLintCodes[error.code]));
+          }
         } else if (error.code) {
           stream.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Error code ' + error.code + '\n' + error));
         } else {
@@ -195,6 +204,8 @@ var gulpScssLint = function (options) {
         path: path.join(files[0].base, options.filePipeOutput),
         contents: new Buffer(contentFile)
       });
+
+      pipeFile.scsslint = lintResult;
 
       stream.emit('data', pipeFile);
     }

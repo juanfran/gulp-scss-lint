@@ -350,6 +350,25 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('confil file does not exist', function (done) {
+    var fakeFile = getFixtureFile('valid.scss');
+    var stream = scssLintPlugin({'config': './test/fixtures/no-exist.yml'});
+    var error = false;
+
+    stream
+      .on('error', function (issue) {
+        expect(issue.message).to.be.equal('Config file did not exist or was not readable');
+        error = true;
+      })
+      .once('end', function() {
+        expect(error).to.be.true;
+        done();
+      });
+
+    stream.write(fakeFile);
+    stream.end();
+  });
+
   it('write the json output', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
 

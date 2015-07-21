@@ -6,7 +6,7 @@ colors = gutil.colors;
 
 exports.failReporter = function (severity) {
   return es.map(function(file, cb) {
-    var error
+    var error;
 
     if (!file.scsslint.success) {
       if (!severity || severity === 'E' && file.scsslint.errors > 0) {
