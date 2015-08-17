@@ -24,8 +24,6 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
-var isWin = /^win/.test(require('os').platform());
-
 var gulpScssLint = function (options) {
   var commandParts = ['scss-lint'],
   excludes = ['bundleExec',
@@ -223,17 +221,15 @@ var gulpScssLint = function (options) {
   }
 
   function endStream() {
+    var shellescape = require('shell-escape');
+
     if (!files.length) {
       streamEnd();
       return;
     }
 
     var filePaths = files.map(function (file) {
-      if (isWin) {
-        return '"' + file.path + '"';
-      } else {
-        return file.path.replace(/(\s)/g, "\\ ");
-      }
+      return shellescape([file.path]);
     });
 
     var command = commandParts.concat(filePaths, optionsArgs).join(' ');
