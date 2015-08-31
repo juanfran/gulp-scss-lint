@@ -93,6 +93,7 @@ var gulpScssLint = function (options) {
 
   function streamEnd() {
     files = [];
+
     stream.emit('end');
   }
 
@@ -208,7 +209,11 @@ var gulpScssLint = function (options) {
       stream.emit('data', pipeFile);
     }
 
-    streamEnd();
+    if (options.endless) {
+      files = [];
+    } else {
+      streamEnd();
+    }
   }
 
   function writeStream(currentFile) {
@@ -223,7 +228,7 @@ var gulpScssLint = function (options) {
   function endStream() {
     var shellescape = require('shell-escape');
 
-    if (!files.length) {
+    if (!files.length || !options.endless) {
       streamEnd();
       return;
     }
