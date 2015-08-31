@@ -27,7 +27,7 @@ exports.defaultReporter = function (file) {
 
     file.scsslint.issues.forEach(function (issue) {
       var severity = issue.severity === 'warning' ? colors.yellow(' [W] ') : colors.red(' [E] ');
-      var linter = issue.linter ? (issue.linter + ': ') : ''
+      var linter = issue.linter ? (issue.linter + ': ') : '';
       var logMsg =
         colors.cyan(file.relative) + ':' + colors.magenta(issue.line) + severity + colors.green(linter) + issue.reason;
 

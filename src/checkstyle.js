@@ -4,7 +4,7 @@ var pd = require('pretty-data').pd,
     xml2js = require('xml2js').parseString;
 
 exports.toJSON = function (report, cb) {
-  var obj = {}
+  var obj = {};
   var xmlReport = pd.xml(report);
   var error = [];
 
@@ -19,9 +19,9 @@ exports.toJSON = function (report, cb) {
           error.$.reason = error.$.message;
 
           obj[file.$.name].push(error.$);
-        })
+        });
     });
 
-    cb(obj, xmlReport);
+    cb([obj, xmlReport]);
   });
 };

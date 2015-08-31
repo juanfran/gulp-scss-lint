@@ -47,9 +47,13 @@ describe('gulp-scss-lint', function() {
     var execStub = sinon.stub();
     execStub.callsArgWith(2, {error: true, code: 127});
 
-    var childProcessStub = {exec: execStub};
+    var scssLintPluginWithProxy = proxyquire(pluginPath, {
+      'child_process': {
+        exec: execStub,
+        '@global': true
+      }
+    });
 
-    var scssLintPluginWithProxy = proxyquire(pluginPath, {'child_process':  childProcessStub});
     var fakeFile = getFixtureFile('invalid.scss');
     var fileCount = 0;
     var stream = scssLintPluginWithProxy();
@@ -77,7 +81,7 @@ describe('gulp-scss-lint', function() {
     var execStub = sinon.stub();
     execStub.callsArgWith(2, {error: true, code: 69});
 
-    var childProcessStub = {exec: execStub};
+    var childProcessStub = {exec: execStub, '@global': true};
 
     var scssLintPluginWithProxy = proxyquire(pluginPath, {'child_process':  childProcessStub});
     var fakeFile = getFixtureFile('invalid.scss');
@@ -161,7 +165,12 @@ describe('gulp-scss-lint', function() {
       defaultReportSpy();
     };
 
-    var scssLintPluginWithProxy = proxyquire(pluginPath, {'./reporters':  {"defaultReporter": defaultReport}});
+    var scssLintPluginWithProxy = proxyquire(pluginPath, {
+      './reporters':  {
+        "defaultReporter": defaultReport,
+        '@global': true
+      }
+    });
     var stream = scssLintPluginWithProxy();
 
     stream
@@ -372,20 +381,16 @@ describe('gulp-scss-lint', function() {
   it('write the json output', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
 
-    var writeFileSpy = sinon.spy();
-    var writeFileStubFunction = function (reporterOutput, report) {
-      expect(reporterOutput).to.equal('test.json');
-      expect(report).to.have.length.above(1);
-
-      writeFileSpy();
-    };
-
-    var scssLintPluginWithProxy = proxyquire(pluginPath, {fs:  {writeFile: writeFileStubFunction}});
-    var stream = scssLintPluginWithProxy({reporterOutput: 'test.json'});
+    var stream = scssLintPlugin({reporterOutput: 'test.json'});
 
     stream
       .once('end', function() {
-        expect(writeFileSpy.calledOnce).to.be.true;
+        var fileContent = fs.readFileSync('test.json', 'utf8');
+
+        expect(fileContent).to.have.length.above(1);
+
+        fs.unlinkSync('test.json');
+
         done();
       });
 
@@ -396,20 +401,16 @@ describe('gulp-scss-lint', function() {
   it('write the xml output', function(done) {
     var fakeFile = getFixtureFile('invalid.scss');
 
-    var writeFileSpy = sinon.spy();
-    var writeFileStubFunction = function (reporterOutput, xmlReport) {
-      expect(reporterOutput).to.equal('test.xml');
-      expect(xmlReport).to.have.length.above(1);
-
-      writeFileSpy();
-    };
-
-    var scssLintPluginWithProxy = proxyquire(pluginPath, {fs:  {writeFile: writeFileStubFunction}});
-    var stream = scssLintPluginWithProxy({reporterOutput: 'test.xml', reporterOutputFormat: 'Checkstyle'});
+    var stream = scssLintPlugin({reporterOutput: 'test.xml', reporterOutputFormat: 'Checkstyle'});
 
     stream
       .once('end', function() {
-        expect(writeFileSpy.calledOnce).to.be.true;
+        var fileContent = fs.readFileSync('test.xml', 'utf8');
+
+        expect(fileContent).to.have.length.above(1);
+
+        fs.unlinkSync('test.xml');
+
         done();
       });
 
