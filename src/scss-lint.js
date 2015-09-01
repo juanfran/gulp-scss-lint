@@ -2,9 +2,23 @@ var Promise = require('bluebird');
 var fs = require('fs');
 var path = require('path');
 var gutil = require('gulp-util');
+var shellescape = require('shell-escape');
+var vinylFs = require('vinyl-fs');
+var es = require('event-stream');
+var path = require('path');
 
 var lintCommand = require('./command');
 var reporters = require('./reporters');
+
+function getRelativePath(file) {
+  return path.relative(process.cwd(), file.path);
+}
+
+function getFilePaths(files) {
+  return files.map(function (file) {
+    return shellescape([getRelativePath(file)]);
+  });
+}
 
 function defaultLintResult() {
   return {
@@ -29,7 +43,7 @@ function reportLint(stream, files, options, report, xmlReport) {
 
   for (var i = 0; i < files.length; i++) {
     lintResult = defaultLintResult();
-    fileReport = report[files[i].path];
+    fileReport = report[getRelativePath(files[i])];
 
     if (fileReport) {
       lintResult.success = false;
@@ -82,12 +96,43 @@ function reportLint(stream, files, options, report, xmlReport) {
   }
 }
 
+function getVinylFiles(paths) {
+  return new Promise(function(resolve, reject){
+    var files = [];
+
+    var stream = es.through(function(currentFile) {
+      files.push(currentFile);
+    }, function() {
+      resolve(files);
+    });
+
+    vinylFs.src(paths).pipe(stream);
+  });
+}
+
 module.exports = function(stream, files, options) {
   return new Promise(function(resolve, reject){
-    lintCommand(files, options)
+    var filesPaths = [];
+
+    if (options.src) {
+      filesPaths = options.src;
+    } else {
+      filesPaths = getFilePaths(files);
+    }
+
+    lintCommand(filesPaths, options)
       .spread(function(report, xmlReport) {
-        reportLint(stream, files, options, report, xmlReport);
-        resolve();
+        if (options.src) {
+          var paths = Object.keys(report);
+
+          getVinylFiles(paths).then(function(vinylFiles) {
+            reportLint(stream, vinylFiles, options, report, xmlReport);
+            resolve();
+          });
+        } else {
+          reportLint(stream, files, options, report, xmlReport);
+          resolve();
+        }
       }, function(e) {
         reject(e);
       });

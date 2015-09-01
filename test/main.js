@@ -418,6 +418,21 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('scss-lint src', function(done) {
+    var fakeFile = getFixtureFile('invalid.scss');
+
+    var stream = scssLintPlugin({src: 'test/fixtures/invalid.scss'});
+
+    stream
+      .on('data', function (file) {
+        expect(file.scsslint.success).to.be.false;
+      })
+      .once('end', function() {
+        done();
+      });
+  });
+
+
   it('should create correct bundle exec command', function (done) {
     var fakeFile = getFixtureFile('valid.scss');
     var stream = scssLintPlugin({'bundleExec': true});

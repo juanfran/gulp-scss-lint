@@ -3,6 +3,7 @@
 var es = require('event-stream'),
 readline = require('readline'),
 gutil = require('gulp-util'),
+Stream = require('stream'),
 colors = gutil.colors,
 reporters = require('./reporters'),
 scssLint = require('./scss-lint');
@@ -35,7 +36,7 @@ var gulpScssLint = function (options) {
       });
   };
 
-  var streamManager = (function() {
+  var getStream = function() {
     var files = [];
 
     var writeStream = function(currentFile){
@@ -62,9 +63,21 @@ var gulpScssLint = function (options) {
     var stream = es.through(writeStream, endStream);
 
     return stream;
-  }());
+  };
 
-  return streamManager;
+  var getNewStream = function() {
+    var stream = process.stdin;
+
+    lint(stream, [options.src]);
+
+    return stream;
+  };
+
+  if (options.src) {
+    return getNewStream();
+  }
+
+  return getStream();
 };
 
 gulpScssLint.failReporter = reporters.failReporter;
