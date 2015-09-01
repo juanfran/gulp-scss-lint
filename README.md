@@ -20,7 +20,7 @@ gem install scss_lint
 var scsslint = require('gulp-scss-lint');
 
 gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(scsslint());
 });
 ```
@@ -154,7 +154,7 @@ var gulpFilter = require('gulp-filter');
 gulp.task('scss-lint', function() {
   var scssFilter = gulpFilter('/scss/vendor/**/*.scss');
 
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(scssFilter)
     .pipe(scsslint())
     .pipe(scssFilter.restore());
@@ -172,7 +172,7 @@ var scsslint = require('gulp-scss-lint');
 var cache = require('gulp-cached');
 
 gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(cache('scsslint'))
     .pipe(scsslint());
 });
@@ -218,7 +218,7 @@ var myCustomReporter = function(file) {
 };
 
 gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(scsslint({
         customReport: myCustomReporter
     }))
@@ -237,7 +237,7 @@ var myCustomReporter = function(file, stream) {
 };
 
 gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(scsslint({
         customReport: myCustomReporter
     }))
@@ -265,7 +265,7 @@ This example will log the issues as usual and then fails if there is any issue.
 var scsslint = require('gulp-scss-lint');
 
 gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(scsslint())
     .pipe(scsslint.failReporter())
 });
@@ -277,7 +277,7 @@ if you just want `failReporter` to fail just with errors pass the 'E' string
 var scsslint = require('gulp-scss-lint');
 
 gulp.task('scss-lint', function() {
-  gulp.src('/scss/*.scss')
+  return gulp.src('/scss/*.scss')
     .pipe(scsslint())
     .pipe(scsslint.failReporter('E'))
 });
