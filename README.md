@@ -136,6 +136,19 @@ If you use gulp-watch set endless to true.
 
 If you want to see the executed scss-lint command for debugging purposes, set this to true.
 
+## Glob pattern without gulp.src
+```js
+var scsslint = require('gulp-scss-lint');
+
+gulp.task('scss-lint', function() {
+  return scsslint({
+    shell: 'bash', // your shell must support glob
+    src: '**/*.scss'
+  });
+});
+```
+
+
 ## Excluding
 
 To exclude files you should use the gulp.src ignore format '!filePath''

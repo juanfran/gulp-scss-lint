@@ -1,4 +1,3 @@
-var shellescape = require('shell-escape');
 var execSync = require('sync-exec');
 var Promise = require('bluebird');
 var checkstyle = require('./checkstyle');
@@ -14,11 +13,13 @@ var scssLintCodes = {
   '127': 'You need to have Ruby and scss-lint gem installed'
 };
 
-function generateCommand(files, options) {
+function generateCommand(filePaths, options) {
   var commandParts = ['scss-lint'],
       excludes = ['bundleExec',
                   'filePipeOutput',
                   'reporterOutput',
+                  'src',
+                  'shell',
                   'reporterOutputFormat',
                   'customReport',
                   'maxBuffer',
@@ -33,10 +34,6 @@ function generateCommand(files, options) {
 
   var optionsArgs = dargs(options, excludes);
 
-  var filePaths = files.map(function (file) {
-    return shellescape([file.path]);
-  });
-
   return commandParts.concat(filePaths, optionsArgs).join(' ');
 }
 
@@ -45,7 +42,8 @@ function execCommand(command, options) {
     var commandOptions = {
       env: process.env,
       cwd: process.cwd(),
-      maxBuffer: options.maxBuffer || 300 * 1024
+      maxBuffer: options.maxBuffer || 300 * 1024,
+      shell: options.shell
     };
 
     if (options.sync || options.endless) {
@@ -100,8 +98,8 @@ function execLintCommand(command, options) {
   });
 }
 
-module.exports = function(files, options) {
-  var command = generateCommand(files, options);
+module.exports = function(filePaths, options) {
+  var command = generateCommand(filePaths, options);
 
   if (options.verbose) {
     console.log(command);
