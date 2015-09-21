@@ -3,7 +3,6 @@
 var es = require('event-stream'),
 readline = require('readline'),
 gutil = require('gulp-util'),
-Stream = require('stream'),
 colors = gutil.colors,
 reporters = require('./reporters'),
 scssLint = require('./scss-lint');

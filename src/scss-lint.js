@@ -5,7 +5,6 @@ var gutil = require('gulp-util');
 var shellescape = require('shell-escape');
 var vinylFs = require('vinyl-fs');
 var es = require('event-stream');
-var path = require('path');
 
 var lintCommand = require('./command');
 var reporters = require('./reporters');
