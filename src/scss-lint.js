@@ -5,12 +5,13 @@ var gutil = require('gulp-util');
 var shellescape = require('shell-escape');
 var vinylFs = require('vinyl-fs');
 var es = require('event-stream');
+var slash = require('slash');
 
 var lintCommand = require('./command');
 var reporters = require('./reporters');
 
 function getRelativePath(file) {
-  return path.relative(process.cwd(), file.path);
+  return slash(path.relative(process.cwd(), file.path));
 }
 
 function getFilePaths(files) {
@@ -42,7 +43,13 @@ function reportLint(stream, files, options, report, xmlReport) {
 
   for (var i = 0; i < files.length; i++) {
     lintResult = defaultLintResult();
-    fileReport = report[getRelativePath(files[i])];
+
+    //relative or absolute path
+    fileReport = report[files[i].path];
+
+    if (!fileReport) {
+      fileReport = report[getRelativePath(files[i])];
+    }
 
     if (fileReport) {
       lintResult.success = false;
