@@ -10,13 +10,13 @@ var slash = require('slash');
 var lintCommand = require('./command');
 var reporters = require('./reporters');
 
-function getRelativePath(file) {
-  return slash(path.relative(process.cwd(), file.path));
+function getRelativePath(filePath) {
+  return slash(path.relative(process.cwd(), filePath));
 }
 
 function getFilePaths(files) {
   return files.map(function (file) {
-    return shellescape([getRelativePath(file)]);
+    return shellescape([getRelativePath(file.path)]);
   });
 }
 
@@ -45,10 +45,10 @@ function reportLint(stream, files, options, report, xmlReport) {
     lintResult = defaultLintResult();
 
     //relative or absolute path
-    fileReport = report[files[i].path];
+    fileReport = report[slash(files[i].path)];
 
     if (!fileReport) {
-      fileReport = report[getRelativePath(files[i])];
+      fileReport = report[getRelativePath(files[i].path)];
     }
 
     if (fileReport) {
