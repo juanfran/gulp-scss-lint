@@ -29,7 +29,15 @@ function defaultLintResult() {
   };
 }
 
-function reportLint(stream, files, options, report, xmlReport) {
+function reportLint(stream, files, options, lintReport, xmlReport) {
+    var report = {};
+
+    // normalize scss-lint urls
+    Object.keys(lintReport).forEach(function(key) {
+        newKey = slash(key);
+        report[newKey] = lintReport[key];
+    });
+
   if (options.reporterOutput) {
     if (xmlReport) {
       fs.writeFileSync(options.reporterOutput, xmlReport);
