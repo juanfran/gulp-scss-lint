@@ -30,9 +30,12 @@ var gulpScssLint = function (options) {
           stream.emit('end');
         }
       }, function(e) {
-        stream.emit('error', new gutil.PluginError(PLUGIN_NAME, e));
+        var err = new gutil.PluginError(PLUGIN_NAME, e);
+
+        stream.emit('error', err);
         stream.emit('end');
-      });
+      })
+      .done(function(e) {});
   };
 
   var getStream = function() {
