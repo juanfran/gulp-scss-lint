@@ -18,6 +18,7 @@ function generateCommand(filePaths, options) {
       excludes = ['bundleExec',
                   'filePipeOutput',
                   'reporterOutput',
+                  'endlessReporter',
                   'src',
                   'shell',
                   'reporterOutputFormat',

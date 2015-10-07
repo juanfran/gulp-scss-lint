@@ -30,20 +30,40 @@ function defaultLintResult() {
 }
 
 function reportLint(stream, files, options, lintReport, xmlReport) {
-    var report = {};
+  var report = {};
 
-    // normalize scss-lint urls
-    Object.keys(lintReport).forEach(function(key) {
-        newKey = slash(key);
-        report[newKey] = lintReport[key];
-    });
+  // normalize scss-lint urls
+  Object.keys(lintReport).forEach(function(key) {
+    newKey = slash(key);
+    report[newKey] = lintReport[key];
+  });
 
-  if (options.reporterOutput) {
+  if (options.reporterOutput || options.endlessReporter) {
+    var output = null;
+    var reporterOutput = null;
+
     if (xmlReport) {
-      fs.writeFileSync(options.reporterOutput, xmlReport);
+      output = xmlReport;
     } else {
-      fs.writeFileSync(options.reporterOutput, JSON.stringify(report));
+      output = JSON.stringify(report);
     }
+
+    if (options.reporterOutput) {
+      reporterOutput = options.reporterOutput || '';
+    } else if(options.endlessReporter) {
+      reporterOutput = '';
+
+      if (typeof options.endlessReporter === 'string' || options.endlessReporter instanceof String) {
+        reporterOutput = options.endlessReporter;
+      }
+
+      reporterOutput = path.join(reporterOutput, 'report-' + path.basename(files[0].path));
+
+      if (xmlReport) reporterOutput += '.xml';
+      else reporterOutput += '.json';
+    }
+
+    fs.writeFileSync(reporterOutput, output);
   }
 
   var fileReport;
@@ -88,6 +108,7 @@ function reportLint(stream, files, options, lintReport, xmlReport) {
     }
   }
 
+  //TODO: endless support
   if (options.filePipeOutput) {
     var contentFile = "";
 
