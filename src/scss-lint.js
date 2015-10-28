@@ -104,7 +104,11 @@ function reportLint(stream, files, options, lintReport, xmlReport) {
     }
 
     if (!options.filePipeOutput) {
-      stream.emit('data', files[i]);
+      if (options.src) {
+        stream.push(files[i]);
+      } else {
+        stream.emit('data', files[i]);
+      }
     }
   }
 
@@ -127,7 +131,11 @@ function reportLint(stream, files, options, lintReport, xmlReport) {
 
     pipeFile.scsslint = lintResult;
 
-    stream.emit('data', pipeFile);
+    if (options.src) {
+      stream.push(files[i]);
+    } else {
+      stream.emit('data', pipeFile);
+    }
   }
 }
 

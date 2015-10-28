@@ -5,7 +5,8 @@ readline = require('readline'),
 gutil = require('gulp-util'),
 colors = gutil.colors,
 reporters = require('./reporters'),
-scssLint = require('./scss-lint');
+scssLint = require('./scss-lint'),
+Readable = require('stream').Readable;
 
 var PLUGIN_NAME = 'gulp-scss-lint';
 
@@ -68,7 +69,8 @@ var gulpScssLint = function (options) {
   };
 
   var getNewStream = function() {
-    var stream = process.stdin;
+    var stream = new Readable({objectMode: true});
+    stream._read = function () {};
 
     lint(stream, [options.src]);
 
