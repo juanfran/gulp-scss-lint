@@ -173,7 +173,13 @@ module.exports = function(stream, files, options) {
             resolve();
           });
         } else {
-          reportLint(stream, files, options, report, xmlReport);
+          try {
+            reportLint(stream, files, options, report, xmlReport);
+          } catch(err) {
+            // if the user run scss-lint from node instead of gulp, stream.emit('data', null); becomes syncronous and this will handle the failReporter #58
+            reject(err);
+          }
+
           resolve();
         }
       }, function(e) {
