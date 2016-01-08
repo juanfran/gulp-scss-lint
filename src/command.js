@@ -1,3 +1,5 @@
+'use strict';
+
 var execSync = require('sync-exec');
 var Promise = require('bluebird');
 var checkstyle = require('./checkstyle');

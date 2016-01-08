@@ -1,3 +1,5 @@
+'use strict';
+
 var Promise = require('bluebird');
 var fs = require('fs');
 var path = require('path');
@@ -34,7 +36,7 @@ function reportLint(stream, files, options, lintReport, xmlReport) {
 
   // normalize scss-lint urls
   Object.keys(lintReport).forEach(function(key) {
-    newKey = slash(key);
+    var newKey = slash(key);
     report[newKey] = lintReport[key];
   });
 
