@@ -299,4 +299,4 @@ gulp.task('scss-lint', function() {
 ## Testing
 
 To test you must first have `scss-lint` installed globally using
-`gem install scss-lint` as well as via bundler using `bundle install`.
+`gem install scss_lint` as well as via bundler using `bundle install`.
