@@ -35,7 +35,7 @@ function generateCommand(filePaths, options) {
     excludes.push('bundleExec');
   }
 
-  var optionsArgs = dargs(options, excludes);
+  var optionsArgs = dargs(options, {excludes: excludes});
 
   return commandParts.concat(filePaths, optionsArgs).join(' ');
 }
