@@ -184,7 +184,8 @@ module.exports = function(stream, files, options) {
 
           resolve();
         }
-      }, function(e) {
+      })
+      .catch(function (e) {
         reject(e);
       });
   });
