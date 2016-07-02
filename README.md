@@ -34,7 +34,7 @@ gulp.task('scss-lint', function() {
 
 ```js
 scsslint({
-    'config': 'lint.yml',
+    'config': 'lint.yml'
 });
 ```
 
