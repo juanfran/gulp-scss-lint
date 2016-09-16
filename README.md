@@ -8,7 +8,7 @@
 npm install gulp-scss-lint --save-dev
 ```
 
-This plugin requires Ruby and [scss-lint](https://github.com/causes/scss-lint)
+This plugin requires Ruby and [scss-lint](https://github.com/brigade/scss-lint)
 ```shell
 gem install scss_lint
 ```
@@ -30,7 +30,7 @@ gulp.task('scss-lint', function() {
 #### config
 
 - Type: `String`
-- Default: [default scss-lint config file](https://github.com/causes/scss-lint/blob/master/config/default.yml).
+- Default: [default scss-lint config file](https://github.com/brigade/scss-lint/blob/master/config/default.yml).
 
 ```js
 scsslint({
@@ -215,7 +215,7 @@ file.scsslint = {
 };
 ```
 
-The issues have the same parameters that [scss-lint](https://github.com/causes/scss-lint#xml)
+The issues have the same parameters that [scss-lint](https://github.com/brigade/scss-lint#checkstyle)
 
 ## Custom reporter
 
