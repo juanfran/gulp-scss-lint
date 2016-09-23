@@ -67,7 +67,8 @@ function execCommand(command, options) {
 }
 
 function configFileReadError(report, options) {
-  return report.indexOf('No such file or directory - ' + options.config) !== -1;
+  var re = new RegExp('No such file or directory(.*)' + options.config, 'g');
+  return re.test(report);
 }
 
 function execLintCommand(command, options) {
