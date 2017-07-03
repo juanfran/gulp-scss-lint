@@ -33,7 +33,7 @@ var gulpScssLint = function (options) {
       }, function(e) {
         var err = new gutil.PluginError(PLUGIN_NAME, e);
 
-        stream.emit('error', err);
+        stream.emit('error', e);
         stream.emit('end');
       })
       .done(function(e) {});
