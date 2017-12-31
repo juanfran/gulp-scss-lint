@@ -1,8 +1,9 @@
 'use strict';
 
 var es = require('event-stream'),
-gutil = require('gulp-util'),
-colors = gutil.colors;
+chalk = require('chalk'),
+PluginError = require('plugin-error'),
+fancyLog = require('fancy-log');
 
 exports.failReporter = function (severity) {
   return es.map(function(file, cb) {
@@ -10,7 +11,7 @@ exports.failReporter = function (severity) {
 
     if (!file.scsslint.success) {
       if (!severity || severity === 'E' && file.scsslint.errors > 0) {
-        error = new gutil.PluginError('gulp-scss-lint', {
+        error = new PluginError('gulp-scss-lint', {
           message: 'ScssLint failed for: ' + file.relative,
           showStack: false
         });
@@ -23,15 +24,15 @@ exports.failReporter = function (severity) {
 
 exports.defaultReporter = function (file) {
   if (!file.scsslint.success) {
-    gutil.log(colors.cyan(file.scsslint.issues.length) + ' issues found in ' + colors.magenta(file.path));
+    fancyLog(chalk.cyan(file.scsslint.issues.length) + ' issues found in ' + chalk.magenta(file.path));
 
     file.scsslint.issues.forEach(function (issue) {
-      var severity = issue.severity === 'warning' ? colors.yellow(' [W] ') : colors.red(' [E] ');
+      var severity = issue.severity === 'warning' ? chalk.yellow(' [W] ') : chalk.red(' [E] ');
       var linter = issue.linter ? (issue.linter + ': ') : '';
       var logMsg =
-        colors.cyan(file.relative) + ':' + colors.magenta(issue.line) + severity + colors.green(linter) + issue.reason;
+        chalk.cyan(file.relative) + ':' + chalk.magenta(issue.line) + severity + chalk.green(linter) + issue.reason;
 
-      gutil.log(logMsg);
+      fancyLog(logMsg);
     });
   }
 }

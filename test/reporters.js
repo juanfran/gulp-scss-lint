@@ -1,13 +1,13 @@
 var proxyquire = require('proxyquire');
-var gutil = require('gulp-util');
-var colors = gutil.colors;
+var chalk = require('chalk');
+var Vinyl = require('vinyl')
 var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
 var fs = require('fs');
 
 var getFixtureFile = function (path) {
-  return new gutil.File({
+  return new Vinyl({
     path:  './test/fixtures/' + path,
     cwd: './test/',
     base: './test/fixtures/',
@@ -19,10 +19,7 @@ var fakeFile = getFixtureFile('invalid.scss');
 
 var getReporters = function (logMock) {
   return proxyquire('../src/reporters', {
-    "gulp-util": {
-      "log": logMock,
-      "colors": colors
-    }
+    "fancy-log": logMock
   });
 }
 
@@ -164,12 +161,12 @@ describe('reporters', function() {
 
     defaultReporter(fakeFile);
 
-    var firstCall = log.withArgs(colors.cyan(fakeFile.scsslint.issues.length) + ' issues found in ' + colors.magenta(fakeFile.path)).calledOnce;
+    var firstCall = log.withArgs(chalk.cyan(fakeFile.scsslint.issues.length) + ' issues found in ' + chalk.magenta(fakeFile.path)).calledOnce;
 
-    var secondCall = log.withArgs(colors.cyan(fakeFile.relative) + ':' + colors.magenta(fakeFile.scsslint.issues[0].line) + colors.yellow(' [W] ') + colors.green(fakeFile.scsslint.issues[0].linter + ': ') + fakeFile.scsslint.issues[0].reason).calledOnce;
+    var secondCall = log.withArgs(chalk.cyan(fakeFile.relative) + ':' + chalk.magenta(fakeFile.scsslint.issues[0].line) + chalk.yellow(' [W] ') + chalk.green(fakeFile.scsslint.issues[0].linter + ': ') + fakeFile.scsslint.issues[0].reason).calledOnce;
 
 
-    var thirdCall = log.withArgs(colors.cyan(fakeFile.relative) + ':' + colors.magenta(fakeFile.scsslint.issues[1].line) + colors.red(' [E] ') + fakeFile.scsslint.issues[1].reason).calledOnce;
+    var thirdCall = log.withArgs(chalk.cyan(fakeFile.relative) + ':' + chalk.magenta(fakeFile.scsslint.issues[1].line) + chalk.red(' [E] ') + fakeFile.scsslint.issues[1].reason).calledOnce;
 
     expect(firstCall).to.be.ok;
     expect(secondCall).to.be.ok;

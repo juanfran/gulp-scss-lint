@@ -2,8 +2,7 @@
 
 var es = require('event-stream'),
 readline = require('readline'),
-gutil = require('gulp-util'),
-colors = gutil.colors,
+PluginError = require('plugin-error'),
 reporters = require('./reporters'),
 scssLint = require('./scss-lint'),
 Readable = require('stream').Readable;
@@ -21,7 +20,7 @@ var gulpScssLint = function (options) {
   }
 
   if (options.exclude) {
-    throw new gutil.PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
+    throw new PluginError(PLUGIN_NAME, "You must use gulp src to exclude");
   }
 
   var lint = function(stream, files) {
@@ -32,7 +31,7 @@ var gulpScssLint = function (options) {
         }
       }, function(e) {
         var existingError = new Error(e);
-        var err = new gutil.PluginError(PLUGIN_NAME, existingError);
+        var err = new PluginError(PLUGIN_NAME, existingError);
 
         stream.emit('error', err);
         stream.emit('end');
