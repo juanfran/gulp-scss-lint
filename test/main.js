@@ -1,14 +1,15 @@
 var pluginPath = '../src/index';
 var scssLintPlugin = require(pluginPath);
 var chai = require('chai');
-var gutil = require('gulp-util');
+var Vinyl = require('vinyl');
+var PluginError = require('plugin-error');
 var fs = require('fs');
 var expect = chai.expect;
 var proxyquire = require('proxyquire');
 var sinon = require('sinon');
 
 var getFixtureFile = function (path) {
-  return new gutil.File({
+  return new Vinyl({
     path:  './test/fixtures/' + path,
     cwd: './test/',
     base: './test/fixtures/',
@@ -211,7 +212,7 @@ describe('gulp-scss-lint', function() {
     var error = false;
 
     var customReport = function (file, stream) {
-      stream.emit('error', new gutil.PluginError("scss-lint", "some error"));
+      stream.emit('error', new PluginError("scss-lint", "some error"));
     };
 
     var stream = scssLintPlugin({"customReport": customReport});

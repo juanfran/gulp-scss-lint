@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 var fs = require('fs');
 var path = require('path');
-var gutil = require('gulp-util');
+var Vinyl = require('vinyl');
 var shellescape = require('shell-escape');
 var vinylFs = require('vinyl-fs');
 var es = require('event-stream');
@@ -124,7 +124,7 @@ function reportLint(stream, files, options, lintReport, xmlReport) {
       contentFile = JSON.stringify(report);
     }
 
-    var pipeFile = new gutil.File({
+    var pipeFile = new Vinyl({
       cwd: files[0].cwd,
       base: files[0].base,
       path: path.join(files[0].base, options.filePipeOutput),
