@@ -1,6 +1,5 @@
 'use strict';
 
-var execSync = require('sync-exec');
 var Promise = require('bluebird');
 var checkstyle = require('./checkstyle');
 var dargs = require('dargs');
@@ -50,7 +49,7 @@ function execCommand(command, options) {
     };
 
     if (options.sync || options.endless) {
-      var commandResult = execSync(command);
+      var commandResult = child_process.execSync(command);
       var error = null;
 
       if (commandResult.status) {
