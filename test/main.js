@@ -266,6 +266,18 @@ describe('gulp-scss-lint', function() {
     stream.end();
   });
 
+  it('scss-lint src success', function(done) {
+    var stream = scssLintPlugin({src: 'test/fixtures/valid.scss'});
+
+    stream
+      .on('data', function (file) {
+        expect(file.scsslint.success).to.be.true;
+      })
+      .once('end', function() {
+        done();
+      });
+  });
+
   it('valid xml pipe output', function(done) {
     var fakeFile = getFixtureFile('valid.scss');
     var stream = scssLintPlugin({"filePipeOutput": "test.xml", 'reporterOutputFormat': 'Checkstyle'});

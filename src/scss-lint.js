@@ -170,10 +170,17 @@ module.exports = function(stream, files, options) {
         if (options.src) {
           var paths = Object.keys(report);
 
-          getVinylFiles(paths).then(function(vinylFiles) {
-            reportLint(stream, vinylFiles, options, report, xmlReport);
-            resolve();
-          });
+          if (paths.length) {
+            getVinylFiles(paths).then(function(vinylFiles) {
+              reportLint(stream, vinylFiles, options, report, xmlReport);
+              resolve();
+            });
+          } else {
+            getVinylFiles(files).then(function(vinylFiles) {
+              reportLint(stream, vinylFiles, options, report, xmlReport);
+              resolve();
+            });        
+          }
         } else {
           try {
             reportLint(stream, files, options, report, xmlReport);
