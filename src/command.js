@@ -58,9 +58,11 @@ function execCommand(command, options) {
 
       resolve({error: error, report: commandResult.stdout});
     } else {
-      child_process.exec(command, commandOptions, function(error, report) {
-        resolve({error: error, report: report});
-      });
+      let re = /&|;|\||<|>/g
+      child_process.exec(command.replace(re, ''), commandOptions,
+        function (error, report) {
+	        resolve({ error: error, report: report })
+        })
     }
   });
 }
