@@ -46,11 +46,11 @@ describe('gulp-scss-lint', function() {
 
   it('if scss-lint is not available throw an error', function(done) {
     var execStub = sinon.stub();
-    execStub.callsArgWith(2, {error: true, code: 127});
+    execStub.callsArgWith(3, {error: true, code: 127});
 
     var scssLintPluginWithProxy = proxyquire(pluginPath, {
       'child_process': {
-        exec: execStub,
+        execFile: execStub,
         '@global': true
       }
     });
@@ -80,9 +80,9 @@ describe('gulp-scss-lint', function() {
 
   it('if scss_lint_reporter_checkstyle is not available throw an error', function(done) {
     var execStub = sinon.stub();
-    execStub.callsArgWith(2, {error: true, code: 69});
+    execStub.callsArgWith(3, {error: true, code: 69});
 
-    var childProcessStub = {exec: execStub, '@global': true};
+    var childProcessStub = {execFile: execStub, '@global': true};
 
     var scssLintPluginWithProxy = proxyquire(pluginPath, {'child_process':  childProcessStub});
     var fakeFile = getFixtureFile('invalid.scss');

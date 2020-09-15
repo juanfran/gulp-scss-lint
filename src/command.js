@@ -36,7 +36,7 @@ function generateCommand(filePaths, options) {
 
   var optionsArgs = dargs(options, {excludes: excludes});
 
-  return commandParts.concat(filePaths, optionsArgs).join(' ');
+  return commandParts.concat(filePaths, optionsArgs);
 }
 
 function execCommand(command, options) {
@@ -47,8 +47,6 @@ function execCommand(command, options) {
       maxBuffer: options.maxBuffer || 300 * 1024,
       shell: options.shell
     };
-
-    command = command.split(' ');
 
     if (options.sync || options.endless) {
       var commandResult = child_process.execFileSync(command[0], command.slice(1));
@@ -107,7 +105,7 @@ module.exports = function(filePaths, options) {
   var command = generateCommand(filePaths, options);
 
   if (options.verbose) {
-    console.log(command);
+    console.log(command.join(' '));
   }
 
   return execLintCommand(command, options);

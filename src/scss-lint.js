@@ -4,7 +4,6 @@ var Promise = require('bluebird');
 var fs = require('fs');
 var path = require('path');
 var Vinyl = require('vinyl');
-var shellescape = require('shell-escape');
 var vinylFs = require('vinyl-fs');
 var es = require('event-stream');
 var slash = require('slash');
@@ -18,7 +17,7 @@ function getRelativePath(filePath) {
 
 function getFilePaths(files) {
   return files.map(function (file) {
-    return shellescape([getRelativePath(file.path)]);
+    return getRelativePath(file.path);
   });
 }
 
@@ -179,7 +178,7 @@ module.exports = function(stream, files, options) {
             getVinylFiles(files).then(function(vinylFiles) {
               reportLint(stream, vinylFiles, options, report, xmlReport);
               resolve();
-            });        
+            });
           }
         } else {
           try {
