@@ -48,8 +48,10 @@ function execCommand(command, options) {
       shell: options.shell
     };
 
+    command = command.split(' ');
+
     if (options.sync || options.endless) {
-      var commandResult = child_process.execSync(command);
+      var commandResult = child_process.execFileSync(command[0], command.slice(1));
       var error = null;
 
       if (commandResult.status) {
@@ -58,7 +60,7 @@ function execCommand(command, options) {
 
       resolve({error: error, report: commandResult.stdout});
     } else {
-      child_process.exec(command, commandOptions, function(error, report) {
+      child_process.execFile(command[0], command.slice(1), commandOptions, function(error, report) {
         resolve({error: error, report: report});
       });
     }
